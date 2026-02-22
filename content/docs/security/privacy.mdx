@@ -1,0 +1,55 @@
+---
+title: Privacy Model
+description: ECDH privacy guarantees, unlinkability, and forward secrecy in SeedPay.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+V0.3 introduces ephemeral session keys to ensure **payment privacy** — blockchain observers cannot link wallet addresses to download activity.
+
+## Privacy Guarantees
+
+### 1. Unlinkability (Blockchain to Swarm)
+
+Blockchain observers see:
+
+```
+wallet_A → wallet_B, memo: { session_hash: "0xabc..." }
+```
+
+They **cannot** determine:
+- Which torrent is being downloaded
+- Which peer_id is involved
+- Which IP address is associated
+
+The `session_hash` is `SHA-256(Session_UUID)` — preimage resistance of SHA-256 prevents reversing it.
+
+### 2. Unlinkability (Session to Session)
+
+- Each TCP connection uses **fresh ephemeral keys**
+- Different sessions produce different Session_UUIDs
+- Blockchain observers cannot link multiple payments from the same user across sessions
+
+### 3. Forward Secrecy
+
+- Ephemeral keys are **deleted after the session ends**
+- Compromising a wallet after the fact cannot decrypt past sessions
+- Past download history remains private
+
+## What is NOT Private
+
+Not all metadata is hidden:
+
+| Visible To | Information |
+|-----------|-------------|
+| Blockchain observers | The fact that `wallet_A` paid `wallet_B` (amounts and timing) |
+| Swarm participants | Seeder wallet addresses (visible in handshake) |
+| ISP / network observer | Connection metadata (IP addresses, timing, volume) |
+
+## Privacy Best Practices
+
+<Callout title="Recommendations">
+  - Use **Tor or VPN** for IP address privacy
+  - Use **burner wallets** funded via mixers for maximum anonymity
+  - Avoid reusing the same Seeder/Leecher wallet combination if privacy is critical
+</Callout>

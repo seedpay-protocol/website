@@ -1,0 +1,74 @@
+---
+title: Cryptographic Requirements
+description: Curve25519, HKDF-SHA256, and RNG requirements for SeedPay implementations.
+---
+
+## Elliptic Curve — Curve25519 (x25519)
+
+SeedPay uses Curve25519 for ECDH key agreement:
+
+- Well-established, audited implementations available
+- Fast key generation and ECDH computation
+- Widely supported: libsodium, NaCl, OpenSSL
+
+All ephemeral keypairs for the [ECDH key exchange](/docs/core-protocol/payment-channels#ephemeral-key-exchange-ecdh) MUST use Curve25519.
+
+## Key Derivation — HKDF-SHA256
+
+The Session UUID is derived from the ECDH shared secret using HKDF:
+
+```
+Session_UUID = HKDF-Expand(
+  key: shared_secret,
+  info: "seedpay-v1-session",
+  length: 32 bytes
+)
+```
+
+| Parameter | Value |
+|-----------|-------|
+| Hash function | SHA-256 |
+| Context string | `"seedpay-v1-session"` |
+| Output length | 32 bytes |
+
+The context string provides domain separation, version compatibility, and protocol isolation.
+
+## Hashing — SHA-256
+
+SHA-256 is used for:
+
+- Computing `session_hash` from Session_UUID: `session_hash = hex(SHA-256(Session_UUID))`
+- Hashing payment check messages before signing
+- Computing `channel_id` from wallet addresses, timestamp, and nonce
+
+## Payment Check Signatures — Ed25519
+
+Payment checks are signed using Ed25519:
+
+```
+// Structured binary encoding (recommended)
+payment_check_data = {
+  channel_id: [u8; 32],
+  amount: u64,
+  nonce: u64
+}
+message = serialize(payment_check_data)
+message_hash = SHA-256(message)
+signature = ed25519_sign(leecher_private_key, message_hash)
+```
+
+The signature MUST be computed over a **hash** of the message (not raw message) to ensure consistent signature length and prevent length extension attacks.
+
+An alternative delimited string encoding is also acceptable:
+
+```
+message = channel_id + ":" + amount.to_string() + ":" + nonce.to_string()
+message_hash = SHA-256(message)
+signature = ed25519_sign(leecher_private_key, message_hash)
+```
+
+## Random Number Generation
+
+- MUST use cryptographically secure RNG (e.g. `/dev/urandom`, `crypto.getRandomValues()`)
+- Ephemeral secret keys MUST be truly random (no deterministic derivation)
+- Nonces for channel opening SHOULD use timestamp-based values for freshness

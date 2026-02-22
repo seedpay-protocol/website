@@ -1,0 +1,39 @@
+---
+title: References
+description: Standards, specifications, and related work referenced by SeedPay.
+---
+
+## BitTorrent Protocol Specifications
+
+- **BEP 3** — [The BitTorrent Protocol Specification](https://www.bittorrent.org/beps/bep_0003.html)
+  Standard handshake, peer wire protocol, piece exchange
+- **BEP 10** — [Extension Protocol](https://www.bittorrent.org/beps/bep_0010.html)
+  Extended handshake mechanism used by SeedPay
+- **BEP 52** — [Message Stream Encryption](https://www.bittorrent.org/beps/bep_0052.html)
+  Required by SeedPay for ECDH key exchange
+
+## Cryptographic Standards
+
+- **RFC 7748** — [Elliptic Curves for Security (Curve25519)](https://tools.ietf.org/html/rfc7748)
+  Curve25519 / x25519 used for ECDH key agreement
+- **RFC 5869** — [HKDF (HMAC-based Key Derivation Function)](https://tools.ietf.org/html/rfc5869)
+  Used to derive Session UUID from shared secret
+- **NIST FIPS 180-4** — [Secure Hash Standard (SHA-256)](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf)
+  Used for session_hash, channel_id, and payment check signatures
+
+## Related Work
+
+- **Coinbase x402 Protocol** — [github.com/coinbase/x402](https://github.com/coinbase/x402)
+  HTTP-native micropayments protocol
+- **Lightning Network** — [lightning.network](https://lightning.network/)
+  Bitcoin payment channels and multi-hop routing
+- **BitTorrent Token (BTT)** — [bittorrent.com/token/btt](https://www.bittorrent.com/token/btt/)
+  Previous attempt at incentivized BitTorrent (centralized, proprietary)
+
+## Changelog
+
+| Version | Date | Changes |
+|---------|------|---------|
+| v0.3 | 2026-01-04 | Dropped ratio credits. Simplified protocol focused on crypto-native users. Direct payments via payment channels only. |
+| v0.2 | 2025-12-21 | ECDH ephemeral session keys for privacy. Removed peer_id from on-chain memos. Unidirectional payment channels with streaming micropayments. |
+| v0.1 | 2025-12-15 | Initial draft with peer_id-based memo binding (deprecated due to privacy concerns). |

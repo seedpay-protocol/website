@@ -1,0 +1,51 @@
+---
+title: Design Principles
+description: Core design principles and participation model of the SeedPay protocol.
+---
+
+## Principles
+
+SeedPay is designed around five core principles:
+
+1. **Backward compatible with BitTorrent** — SeedPay extends the existing wire protocol via BEP 10 (Extension Protocol). Non-SeedPay clients continue to work without modification.
+
+2. **Opt-in** — No forced payments. Users choose whether to participate in the paid tier or use free BitTorrent as usual.
+
+3. **Blockchain-agnostic** — Solana is the initial target chain, but the protocol is designed to be extensible to Ethereum, L2s, and other chains.
+
+4. **Minimal trust required** — Payment verification is done on-chain. Seeders verify payments independently via blockchain state — they never trust client-reported data.
+
+5. **Privacy-preserving** — On-chain payments cannot be linked to download activity. Ephemeral session keys (ECDH-based) replace raw PeerIDs in on-chain memos.
+
+## Participation Model
+
+Users can participate in both directions:
+
+- **Earn**: Seed files and receive payments from leechers
+- **Spend**: Pay seeders to download files quickly
+
+This creates a **circular economy**: users earn USDC by seeding, then spend it on downloads, all within the same payment system.
+
+```
+User A: Seeds 10GB → Earns 0.1 USDC
+User A: Downloads 5GB → Spends 0.05 USDC
+Result: User A has 0.05 USDC remaining (net earner)
+```
+
+### Getting Started as a User
+
+Users can enter the economy in multiple ways:
+
+1. **Add funds** (buy USDC) for immediate download access
+2. **Seed popular content** to earn USDC from other users
+3. **Offset costs** by seeding and earning while downloading
+4. **Become a net earner** by seeding more than downloading
+
+## Protocol Version
+
+This documentation covers **SeedPay v0.3**, which introduces:
+
+- Ephemeral Session Keys (ECDH-based) for privacy
+- Unidirectional payment channels with streaming micropayments
+- Simplified protocol focused on crypto-native users with direct payments
+- Ratio credits system dropped in favor of simpler implementation

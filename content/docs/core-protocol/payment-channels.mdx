@@ -1,0 +1,263 @@
+---
+title: Payment Channels
+description: ECDH key exchange, channel opening, streaming micropayments, and channel closing.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+Once the [handshake](/docs/core-protocol/handshake) is complete and the Leecher has discovered a paid Seeder, the next step is to establish a cryptographically-bound payment channel.
+
+Payment channels enable **streaming micropayments**: the Leecher deposits funds into an escrow account, then signs off-chain payment checks as data is downloaded. The Seeder can submit the final check to claim funds, or the Leecher can close the channel after a timeout period.
+
+## Ephemeral Key Exchange (ECDH)
+
+Before creating the payment transaction, both peers establish a shared secret using Elliptic Curve Diffie-Hellman (ECDH). This happens inside the existing MSE (Message Stream Encryption) tunnel.
+
+<Steps>
+  <Step>
+    ### Generate Ephemeral Keypairs
+
+    Both parties independently generate fresh Curve25519 keypairs:
+
+    ```
+    secret_key = random_32_bytes()
+    public_key = secret_key × G
+    ```
+
+    Where `G` is the standard generator point on Curve25519.
+  </Step>
+  <Step>
+    ### Exchange Public Keys
+
+    Peers exchange ephemeral public keys via a SeedPay extension message over the encrypted MSE tunnel:
+
+    ```json
+    {
+      "type": "ecdh_init",
+      "ephemeral_pk": "<32-byte-public-key-hex>"
+    }
+    ```
+  </Step>
+  <Step>
+    ### Compute Shared Secret
+
+    Both parties arrive at the same shared secret:
+
+    ```
+    Leecher: shared_secret = leecher_secret_key × seeder_public_key
+    Seeder:  shared_secret = seeder_secret_key × leecher_public_key
+    ```
+  </Step>
+  <Step>
+    ### Derive Session UUID
+
+    ```
+    Session_UUID = HKDF-Expand(
+      key: shared_secret,
+      info: "seedpay-v1-session",
+      length: 32 bytes
+    )
+    ```
+  </Step>
+</Steps>
+
+The `Session_UUID` is now known only to these two peers and cryptographically binds this payment to this specific TCP connection.
+
+### Security Properties
+
+| Property | Guarantee |
+|----------|-----------|
+| **Forward Secrecy** | Ephemeral keys are deleted after the session — past sessions cannot be decrypted even if wallets are compromised |
+| **MITM Resistance** | An attacker cannot forge the Session_UUID without knowing one of the private keys |
+| **Unlinkability** | Blockchain observers see only `Hash(Session_UUID)` — they cannot reverse it or link it to peer activity |
+| **Replay Protection** | Each session has a unique UUID; old payment proofs cannot be reused |
+
+### Why "seedpay-v1-session"?
+
+The context string provides **domain separation** (distinct from other derived keys), **version compatibility** (future versions use `"seedpay-v2-session"`), and **protocol isolation** (prevents key reuse across protocols).
+
+## Pricing and Channel Setup
+
+From the extended handshake, the Leecher learns the Seeder's terms:
+
+- `wallet`: on-chain wallet address
+- `price_per_mb`: quoted price in USDC per MB
+- `min_prepayment`: minimum amount to open a channel
+- `chain`: settlement chain (e.g. `"solana"`)
+
+The Leecher may also apply local policy such as maximum price per MB, maximum total spend, or minimum acceptable timeout.
+
+If terms are acceptable, the Leecher computes an initial deposit large enough to cover 50–200 MB of data (but at least `min_prepayment`).
+
+## Opening a Payment Channel
+
+The Leecher opens a unidirectional payment channel by depositing funds into an escrow account controlled by a smart contract.
+
+### Channel ID
+
+```
+channel_id = SHA-256(
+  leecher_wallet_address ||
+  seeder_wallet_address ||
+  timestamp ||
+  nonce
+)
+```
+
+The `channel_id` is deterministically derivable from on-chain data so the smart contract can create and lookup channels without requiring the Session_UUID.
+
+### Channel State
+
+```
+channel_state = {
+  leecher: <leecher_wallet_address>
+  seeder: <seeder_wallet_address>
+  escrow: <escrow_account_address>
+  deposited: <amount_in_tokens>
+  channel_id: <channel_id>
+  created_at: <blockchain_timestamp>
+  timeout: <created_at + timeout_period>
+  last_nonce: 0
+  status: "Open"
+}
+```
+
+### Privacy-Preserving Memo
+
+The channel opening transaction includes a memo with only the opaque session identifier:
+
+```json
+{
+  "protocol": "seedpay",
+  "version": "1.0",
+  "session_hash": "a3f5c8d9e2b1...",
+  "nonce": 1702700000000
+}
+```
+
+Where `session_hash` = `hex(SHA-256(Session_UUID))`. No `peer_id` or IP address appears on-chain.
+
+### Channel Opening Notification
+
+After the transaction is confirmed, the Leecher notifies the Seeder:
+
+```json
+{
+  "type": "channel_opened",
+  "tx_signature": "<transaction_signature>",
+  "channel_id": "<channel_identifier>",
+  "amount": 0.01,
+  "timestamp": 1702700000000
+}
+```
+
+<Callout type="warn">
+  The Seeder MUST NOT rely on the `amount` field or any client-provided data. All validation is done against on-chain state. The Seeder proceeds to [Verification](/docs/core-protocol/verification) before serving any data.
+</Callout>
+
+## Streaming Off-Chain Payments
+
+Once the channel is [verified](/docs/core-protocol/verification), the Leecher streams micropayments by signing off-chain payment checks.
+
+### Payment Check Structure
+
+```json
+{
+  "channel_id": "<channel_identifier>",
+  "amount": 0.005,
+  "nonce": 1,
+  "signature": "<ed25519_signature>"
+}
+```
+
+- `amount`: **cumulative** amount authorized (not per-check)
+- `nonce`: monotonically increasing sequence number
+- `signature`: Ed25519 signature over `channel_id || amount || nonce`
+
+### Signing Payment Checks
+
+The signature MUST be computed over a hash of the message to ensure consistent length and prevent length extension attacks:
+
+```
+// Structured binary encoding (recommended)
+payment_check_data = {
+  channel_id: [u8; 32],
+  amount: u64,
+  nonce: u64
+}
+message = serialize(payment_check_data)
+message_hash = SHA-256(message)
+signature = ed25519_sign(leecher_private_key, message_hash)
+```
+
+### Recommended Frequency
+
+| Download Size | Frequency |
+|---------------|-----------|
+| Small (\<100MB) | Every 10MB or 40 pieces |
+| Medium (100MB–1GB) | Every 50MB or 200 pieces |
+| Large (\>1GB) | Every 100MB or 400 pieces |
+
+Leechers SHOULD send checks proactively rather than waiting for `payment_check_required` messages.
+
+### Payment Check Message
+
+```json
+{
+  "type": "payment_check",
+  "channel_id": "<channel_identifier>",
+  "amount": 0.005,
+  "nonce": 1,
+  "signature": "<base64_encoded_signature>"
+}
+```
+
+## Closing a Payment Channel
+
+### Cooperative Close (Normal)
+
+The Seeder submits the highest valid payment check to the blockchain:
+
+```
+close_channel(
+  channel_id: <channel_id>
+  amount: <highest_check_amount>
+  nonce: <highest_check_nonce>
+  signature: <highest_check_signature>
+)
+```
+
+The smart contract transfers `amount` to the Seeder, refunds the remainder to the Leecher, and marks the channel as closed.
+
+### Timeout Close (Force-Close)
+
+If the Seeder disappears, the Leecher can force-close after the timeout period:
+
+```
+timeout_close(channel_id: <channel_id>)
+```
+
+The smart contract refunds the entire deposit to the Leecher.
+
+### Timeout Periods
+
+| Scenario | Timeout |
+|----------|---------|
+| Quick downloads (\< 1 hour) | 3,600 seconds (1 hour) |
+| Standard downloads | 86,400 seconds (24 hours) |
+| Long-running channels | 604,800 seconds (7 days) |
+
+The timeout MUST be at least 3,600 seconds to allow for normal session completion.
+
+### Channel Closing Notification
+
+```json
+{
+  "type": "channel_closed",
+  "channel_id": "<channel_identifier>",
+  "tx_signature": "<closing_transaction_signature>",
+  "final_amount": 0.005,
+  "reason": "cooperative"
+}
+```

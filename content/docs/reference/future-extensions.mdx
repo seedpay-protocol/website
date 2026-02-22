@@ -1,0 +1,83 @@
+---
+title: Future Extensions
+description: Planned and potential extensions to the SeedPay protocol.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Multi-Chain Support
+
+The ECDH-based session binding is chain-agnostic and can be implemented on:
+
+- **Ethereum** — Use EIP-3009 for meta-transactions
+- **Base, Arbitrum, Optimism** — L2s with low fees
+- Other EVM-compatible chains
+
+<Callout>
+  Multi-chain support is planned for a future version. V1 targets Solana as the initial chain.
+</Callout>
+
+## Advanced Payment Models
+
+### Current: Unidirectional Channels (V1)
+
+SeedPay V1 uses unidirectional channels (Leecher → Seeder only) because:
+
+- Seeders earn, Leechers pay (one direction of value flow)
+- Simpler state management (no need for both parties to sign updates)
+- Lower risk (only Leecher's deposit is at risk)
+- Sufficient for the core use case of paid file downloads
+
+### Future: Bidirectional Payment Channels
+
+Bidirectional channels would allow both parties to send payments, enabling:
+
+- Refunds or disputes
+- Two-way value exchange
+- More complex payment flows
+
+These require more complex state management with both parties signing updates.
+
+### Future: Probabilistic Payments
+
+Lottery-style micropayments for extreme scalability:
+
+- Trade certainty for reduced transaction count
+- Useful for very high-frequency, low-value transactions
+
+### Future: Multi-Hop Payment Routing
+
+Allow payments through intermediate nodes (similar to Lightning Network):
+
+- Enables payment channel networks
+- Requires routing protocol and liquidity management
+
+## Ratio Credits (V2 Consideration)
+
+<Callout>
+  Ratio credits are **deferred to V2**. V1 focuses on direct payments via payment channels.
+</Callout>
+
+V2 MAY add ratio credits if user research indicates:
+
+- Strong demand for non-monetary credits
+- Need for better privacy (credits vs direct payments)
+- Anti-Sybil mechanisms that credits can provide
+- Demand from non-crypto users
+
+### Design Challenges
+
+- Preventing Sybil attacks (users farming credits with fake seeders)
+- Ensuring credits have real value (tied to actual bandwidth provision)
+- Cross-torrent credit portability
+- On-chain vs off-chain credit ledger
+- Credit verification mechanisms
+
+## Reputation Systems
+
+Planned reputation features for future versions:
+
+- Seeder reputation based on successful channel closes
+- Leecher trust scores
+- Rate limiting for channel creation per wallet
+- Proof-of-bandwidth mechanisms

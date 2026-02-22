@@ -1,0 +1,4 @@
+{
+  "title": "Core Protocol",
+  "pages": ["index", "handshake", "payment-channels", "verification", "data-transfer"]
+}

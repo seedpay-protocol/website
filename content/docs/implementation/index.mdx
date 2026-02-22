@@ -1,0 +1,44 @@
+---
+title: Implementation Overview
+description: Practical guidance for implementing SeedPay clients and infrastructure.
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Callout type="warn">
+  SeedPay V0.3 **requires** MSE (Message Stream Encryption / BEP 52) for ECDH key exchange. Fallback to unencrypted mode is NOT supported for payment sessions.
+</Callout>
+
+This section covers the practical requirements for implementing a SeedPay-compatible client, including cryptographic primitives, blockchain integration, and error handling.
+
+## Key Requirements
+
+| Area | Requirement |
+|------|-------------|
+| **Encryption** | MSE (BEP 52) required for all payment sessions |
+| **Elliptic Curve** | Curve25519 (x25519) for ECDH key exchange |
+| **Key Derivation** | HKDF-SHA256 with context `"seedpay-v1-session"` |
+| **Hashing** | SHA-256 for session_hash and payment check signatures |
+| **Blockchain** | Smart contract with open/close/timeout_close functions |
+| **Token** | SPL Token (Solana), ERC-20 (Ethereum/EVM) |
+
+## Performance Overhead
+
+SeedPay adds minimal overhead to the BitTorrent protocol:
+
+| Operation | Cost |
+|-----------|------|
+| ECDH key generation | ~0.1ms |
+| Key exchange | 2 round-trips (within handshake) |
+| HKDF derivation | \<0.01ms |
+| Payment check validation | Off-chain (no RPC calls) |
+| Channel open/close | 1 RPC call each |
+
+## Deep Dive
+
+<Cards>
+  <Card title="Cryptographic Requirements" href="/docs/implementation/cryptography" />
+  <Card title="Blockchain Integration" href="/docs/implementation/blockchain-integration" />
+  <Card title="Error Handling" href="/docs/implementation/error-handling" />
+</Cards>

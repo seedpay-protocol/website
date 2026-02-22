@@ -1,13 +1,43 @@
 ---
-title: Hello World
-description: Your first document
+title: SeedPay Documentation
+description: Protocol specification for SeedPay — payments for BitTorrent networks.
 ---
 
-Welcome to the docs! You can start writing documents in `/content/docs`.
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
 
-## What is Next?
+<Callout type="warn" title="Pre-Alpha / RFC">
+  This specification is **v0.3 draft** — research software, not for production use.
+</Callout>
+
+SeedPay is an open payment protocol that enables BitTorrent seeders to earn cryptocurrency (USDC) for sharing files. Leechers pay seeders directly via unidirectional payment channels with streaming micropayments.
+
+## Quick Links
 
 <Cards>
-  <Card title="Learn more about Next.js" href="https://nextjs.org/docs" />
-  <Card title="Learn more about Fumadocs" href="https://fumadocs.dev" />
+  <Card title="What is SeedPay?" href="/docs/getting-started" />
+  <Card title="Design Principles" href="/docs/getting-started/design-principles" />
+  <Card title="Protocol Flow" href="/docs/core-protocol" />
+  <Card title="Security Model" href="/docs/security" />
+  <Card title="Implementation Guide" href="/docs/implementation" />
+  <Card title="Message Reference" href="/docs/reference/message-types" />
 </Cards>
+
+## Protocol at a Glance
+
+| Property | Value |
+|----------|-------|
+| **Version** | v0.3 (Pre-Alpha) |
+| **Payment** | USDC via unidirectional payment channels |
+| **Pricing** | $0.0001–$0.001 per MB |
+| **Privacy** | ECDH ephemeral session keys (no peer_id on-chain) |
+| **Chain** | Solana (initial), extensible to EVM chains |
+| **Compatibility** | Backward compatible with standard BitTorrent |
+| **On-chain cost** | 2 transactions per session (open + close) |
+
+## How It Works
+
+1. **Handshake** — Peers advertise SeedPay support via BEP 10 extended handshake
+2. **Channel Setup** — ECDH key exchange, then Leecher opens a payment channel on-chain
+3. **Verification** — Seeder verifies the channel on-chain before serving data
+4. **Data Transfer** — Standard BitTorrent piece exchange with streaming payment checks

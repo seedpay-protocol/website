@@ -1,0 +1,36 @@
+---
+title: Security Overview
+description: Security model, threat landscape, and privacy guarantees of SeedPay.
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+SeedPay's security model is built on three pillars: **privacy** (unlinkable on-chain payments), **payment verification** (blockchain as source of truth), and **economic attack resistance** (bounded losses, front-run resistance).
+
+## Threat Model
+
+SeedPay considers the following adversaries:
+
+| Adversary | Capabilities | Mitigations |
+|-----------|-------------|-------------|
+| **Blockchain observer** | Can see all on-chain transactions | ECDH session keys — no peer_id or IP on-chain |
+| **Network eavesdropper** | Can observe TCP connections | MSE tunnel encrypts all SeedPay messages |
+| **Malicious seeder** | May send corrupted data or refuse to serve | BitTorrent hash verification, bounded loss per piece |
+| **Malicious leecher** | May refuse to pay after receiving data | Seeder tracks payment checks before serving |
+| **Sybil attacker** | Creates many fake identities | Economic cost of channel opening deters spam |
+
+## Key Guarantees
+
+- **No peer_id on-chain** — blockchain observers cannot link wallets to swarm activity
+- **Session unlinkability** — different sessions produce different Session_UUIDs
+- **Forward secrecy** — ephemeral keys are deleted after sessions
+- **Bounded loss** — maximum loss per session is bounded by channel deposit (leecher) or cost of 1 piece (seeder)
+- **Front-run resistance** — smart contract enforces monotonically increasing amounts
+
+## Deep Dive
+
+<Cards>
+  <Card title="Privacy Model" href="/docs/security/privacy" />
+  <Card title="Economic Attacks" href="/docs/security/economic-attacks" />
+  <Card title="Payment Verification" href="/docs/security/payment-verification" />
+</Cards>

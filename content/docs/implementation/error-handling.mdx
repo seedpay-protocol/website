@@ -1,0 +1,124 @@
+---
+title: Error Handling
+description: Handling connection drops, RPC failures, invalid checks, timeouts, and recovery procedures.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Connection Drops Mid-Session
+
+### Leecher Behavior
+
+- **Before sending final payment check:**
+  - Reconnect and continue with same channel (if still open)
+  - Or force-close channel after timeout to recover unspent deposit
+- **After sending payment check:**
+  - Seeder may have already received check and can close channel
+  - Monitor channel state to verify final settlement
+
+### Seeder Behavior
+
+- **Before receiving final payment check:**
+  - Attempt to close channel with highest received check
+  - If no valid check received, Leecher will timeout close
+- **After receiving payment check:**
+  - Close channel immediately with received check
+  - Do not wait for reconnection
+
+## RPC Failures During Channel Verification
+
+### Retry Strategy
+
+- Exponential backoff: 1s, 2s, 4s, 8s, 16s
+- Maximum retries: 5 attempts
+- After max retries: Reject channel, keep Leecher choked
+
+### Fallback
+
+- Maintain list of trusted RPC providers
+- Switch to backup RPC provider if primary fails
+- Cache recent channel verifications to reduce RPC dependency
+
+## Invalid Payment Check Handling
+
+| Failure | Action |
+|---------|--------|
+| Invalid signature | Reject check, send error, keep choked |
+| Stale nonce | Reject check, send expected nonce, keep choked |
+| Amount exceeds deposit | Reject check, send error, keep choked |
+| Amount not increasing | Reject check, send error, keep choked |
+
+Error message format:
+
+```json
+{
+  "type": "payment_check_rejected",
+  "channel_id": "<channel_identifier>",
+  "reason": "stale_nonce",
+  "expected_nonce": 5,
+  "received_nonce": 3
+}
+```
+
+## Channel Timeout Edge Cases
+
+When the channel timeout approaches while download is still in progress:
+
+### Leecher
+
+- Monitor timeout (e.g. check every 10 minutes)
+- If \< 1 hour remaining and download incomplete:
+  - **Option 1:** Open new channel and continue
+  - **Option 2:** Extend timeout (if contract supports it)
+  - **Option 3:** Force-close and recover funds
+
+### Seeder
+
+- Monitor timeout for active sessions
+- If approaching: send warning, request new channel
+- If no response: close channel with highest check
+
+```json
+{
+  "type": "channel_timeout_warning",
+  "channel_id": "<channel_identifier>",
+  "timeout_in_seconds": 3600,
+  "recommended_action": "open_new_channel"
+}
+```
+
+## Transaction Failures
+
+### Channel Opening Failure
+
+- Retry with new nonce (avoid replay)
+- Check network conditions, increase gas/fee if applicable
+- Maximum retries: 3 attempts
+
+### Channel Closing Failure
+
+- **Cooperative close:** Retry with same payment check
+- **Timeout close:** Retry with same channel_id
+- If repeated failures: wait and retry later (likely network congestion)
+
+## Recovery Procedures
+
+### Leecher Recovery
+
+<Callout>
+  On startup, scan for open channels associated with the wallet.
+</Callout>
+
+For each open channel:
+1. Check if timeout has passed
+2. If timed out → Force-close to recover funds
+3. If not timed out → Check if download can continue or should be abandoned
+
+### Seeder Recovery
+
+On startup, scan for open channels where this wallet is the seeder.
+
+For each open channel:
+1. Check if valid payment checks were received
+2. If valid checks exist → Close channel to claim funds
+3. If no valid checks → Channel will timeout, no action needed

@@ -1,0 +1,97 @@
+---
+title: Data Transfer
+description: How pieces are served under payment check constraints during a paid session.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+After a payment session is established via [verification](/docs/core-protocol/verification), the Seeder begins serving pieces to the Leecher while tracking payment checks. This phase reuses the normal BitTorrent `request`/`piece`/`cancel` messages and adds only local accounting.
+
+## Mapping Pieces to Cost
+
+SeedPay doesn't modify BitTorrent wire messages for data transfer. Instead, the Seeder observes each `request` message and converts the byte length into monetary cost:
+
+```
+cost = bytes / (1024 × 1024) × price_per_mb
+```
+
+The Seeder maintains per payment session:
+
+| Field | Description |
+|-------|-------------|
+| `channel_id` | Payment channel identifier |
+| `channel_deposit` | Total amount locked in escrow |
+| `last_check_nonce` | Highest nonce from valid payment checks |
+| `last_check_amount` | Highest amount authorized by valid checks |
+| `bytes_downloaded` | Cumulative bytes served |
+| `price_per_mb` | Agreed rate from handshake |
+
+Tracking on successful `piece` send is RECOMMENDED for accuracy.
+
+## Serving Requests
+
+For each `request(index, begin, length)` from the Leecher, the Seeder:
+
+1. **Looks up** the payment session for this connection
+2. **Computes** the cost of serving this block
+3. **Computes** cumulative cost: `(bytes_downloaded + length) / (1024 × 1024) × price_per_mb`
+4. **Checks** whether `last_check_amount` covers the `cumulative_cost`
+
+### If Payment is Sufficient
+
+The Seeder increments `bytes_downloaded` and sends the `piece` message as normal.
+
+### If Payment is Insufficient
+
+The Seeder MAY send a `payment_check_required` message:
+
+```json
+{
+  "type": "payment_check_required",
+  "required_amount": 0.005,
+  "current_check_amount": 0.003,
+  "estimated_remaining_mb": 20.0
+}
+```
+
+<Callout>
+  Before choking, the Seeder SHOULD wait a short grace period (e.g. 5 seconds) to allow in-flight payment checks to arrive. This prevents unnecessary choke/unchoke cycles.
+</Callout>
+
+After the grace period, if no valid check has been received, the Seeder chokes the Leecher until a new payment check arrives.
+
+## Payment Check Processing
+
+When the Seeder receives a `payment_check` during data transfer:
+
+1. **Verify** the signature using the Leecher's public key from channel state
+2. **Verify** nonce is greater than `last_check_nonce` (prevents replay)
+3. **Verify** amount is greater than or equal to `last_check_amount` (monotonically increasing)
+4. **Verify** amount does not exceed `channel_deposit`
+
+If all validations pass:
+
+- Update `last_check_nonce` and `last_check_amount`
+- Unchoke the Leecher if previously choked
+- Continue serving pieces
+
+If validation fails:
+
+- Reject the check and keep the Leecher choked
+- MAY send a `payment_check_rejected` error (see [Message Types](/docs/reference/message-types))
+
+## Session Lifetime
+
+A Seeder SHOULD treat a session as expired if:
+
+- The channel timeout has been reached
+- The connection is closed or idle for too long
+- The ephemeral keys have been deleted
+
+When a session ends, the Seeder SHOULD:
+
+1. Submit the highest valid payment check to [close the channel cooperatively](/docs/core-protocol/payment-channels#cooperative-close-normal)
+2. Discard session state (channel tracking, usage counters)
+3. Delete the ephemeral secret key (ensures forward secrecy)
+
+The Seeder MAY continue to serve as a free seeder (if local policy allows) or close the connection entirely.

@@ -1,0 +1,65 @@
+---
+title: What is SeedPay?
+description: An open payment protocol that enables BitTorrent seeders to earn cryptocurrency for sharing files.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+<Callout type="warn" title="Pre-Alpha">
+  This specification is **v0.3 draft**. This is research software — do not use in production.
+</Callout>
+
+SeedPay is an open payment protocol that enables BitTorrent seeders to earn cryptocurrency for sharing files, while leechers pay seeders directly with stablecoins (e.g. USDC) for faster downloads and guaranteed availability.
+
+By extending the BitTorrent Wire Protocol with payment handshakes and blockchain-verified payment channels, SeedPay solves the **free-rider problem** without requiring centralized infrastructure or breaking compatibility with existing clients.
+
+## The Problem
+
+BitTorrent's success depends on users seeding (uploading) files after downloading them. However, rational actors have no incentive to continue seeding once their download completes — leading to the "free-rider problem."
+
+- Popular torrents thrive (many seeders)
+- Long-tail content dies (no seeders after initial interest)
+- Download speeds degrade as seeder/leecher ratio drops
+- The network relies on altruism, which doesn't scale
+
+## The Solution
+
+SeedPay provides **direct economic incentives** for seeding through micropayments:
+
+- **Micropayments**: Leechers pay seeders in stablecoins (e.g. USDC) — typical pricing: $0.0001–$0.001/MB
+- **Payment Channels**: Streaming micropayments with minimal on-chain costs
+- **Privacy**: Ephemeral session keys ensure blockchain observers cannot link wallet addresses to download activity
+- **Backward Compatible**: Standard BitTorrent continues to work — payments are opt-in
+
+## Who is SeedPay For?
+
+**Target users:** Crypto-native users who value speed, availability, and supporting content creators. Non-crypto users can continue using standard BitTorrent for free.
+
+### Roles
+
+| Role | Description |
+|------|-------------|
+| **Leecher** | Downloads files, pays seeders with cryptocurrency (e.g. USDC) |
+| **Seeder** | Uploads files, earns cryptocurrency from leechers |
+
+### Participation Tiers
+
+- **Free Tier**: Standard BitTorrent continues to work (free seeders, tit-for-tat)
+- **Paid Tier**: SeedPay-enabled clients can pay for faster speeds and guaranteed availability
+
+## Why Not Existing Solutions?
+
+| Solution | Limitation |
+|----------|-----------|
+| **Tit-for-tat** | Only works during active sessions; no post-download incentive |
+| **Private trackers** | Centralized, invite-only, high barrier to entry |
+| **BitTorrent Token (BTT)** | Centralized ledger, proprietary, limited adoption |
+
+## Next Steps
+
+<Cards>
+  <Card title="Design Principles" href="/docs/getting-started/design-principles" />
+  <Card title="Core Protocol Flow" href="/docs/core-protocol" />
+  <Card title="Security Model" href="/docs/security" />
+</Cards>

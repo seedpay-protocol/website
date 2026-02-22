@@ -1,0 +1,125 @@
+---
+title: Blockchain Integration
+description: Smart contract requirements, token programs, RPC providers, and confirmation levels.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Smart Contract Requirements
+
+The payment channel MUST be implemented as a smart contract on the target blockchain. The contract MUST provide three functions:
+
+### open_channel
+
+Creates a new payment channel.
+
+- **Parameters:** `leecher`, `seeder`, `deposit_amount`, `timeout_period`, `channel_id`, `memo`
+- **Actions:**
+  - Transfer tokens from Leecher to escrow account
+  - Create channel state record
+  - Store channel metadata
+- **Returns:** Transaction signature
+
+### close_channel
+
+Closes channel with the final payment check (cooperative close).
+
+- **Parameters:** `channel_id`, `amount`, `nonce`, `signature`
+- **Actions:**
+  - Verify payment check signature
+  - Verify nonce exceeds `last_nonce`
+  - Transfer `amount` to Seeder
+  - Refund `deposited - amount` to Leecher
+  - Mark channel as closed
+- **Returns:** Transaction signature
+
+### timeout_close
+
+Closes channel after timeout (force-close by Leecher).
+
+- **Parameters:** `channel_id`
+- **Actions:**
+  - Verify `current_time` exceeds `channel.timeout`
+  - Refund entire deposit to Leecher
+  - Mark channel as timed out
+- **Returns:** Transaction signature
+
+## Account / State Structure
+
+The contract MUST use deterministic account addressing (e.g. Program Derived Addresses on Solana, CREATE2 on Ethereum) to ensure channel accounts can be computed from parameters.
+
+### Transaction Construction
+
+```
+transaction = {
+  instructions: [
+    token_transfer(leecher -> escrow, amount),
+    create_channel_state(
+      leecher: leecher_wallet,
+      seeder: seeder_wallet,
+      escrow: escrow_account,
+      deposited: amount,
+      channel_id: channel_id,
+      created_at: current_timestamp,
+      timeout: current_timestamp + timeout_period,
+      last_nonce: 0,
+      status: "Open"
+    ),
+    attach_memo({
+      protocol: "seedpay",
+      version: "1.0",
+      session_hash: session_hash,
+      nonce: nonce
+    })
+  ],
+  signers: [leecher_private_key]
+}
+```
+
+## Token Program Requirements
+
+The blockchain MUST support:
+
+- Token transfers (fungible tokens, e.g. USDC)
+- Escrow accounts controlled by smart contracts
+- Memo/note attachment to transactions
+
+| Chain | Token Standard |
+|-------|---------------|
+| Solana | SPL Token program |
+| Ethereum/EVM | ERC-20 tokens |
+| Other chains | Equivalent fungible token standard |
+
+## RPC Provider Requirements
+
+<Callout>
+  For production Seeders, use dedicated RPC providers — not public free-tier endpoints.
+</Callout>
+
+### Minimum Requirements
+
+| Metric | Requirement |
+|--------|-------------|
+| Read operations | ≥ 10 requests/second |
+| Write operations | ≥ 5 transactions/second |
+| Confirmation time | \< 5 seconds for "confirmed" status |
+
+### RPC Operations
+
+| Operation | RPC Calls | When |
+|-----------|-----------|------|
+| Channel opening verification | 1 | Per channel |
+| Channel closing | 1 | Per close |
+| Payment check validation | 0 | Off-chain during data transfer |
+
+Implement retry logic with exponential backoff and cache channel state to reduce RPC dependency.
+
+## Confirmation Requirements
+
+| Event | Minimum | Recommended |
+|-------|---------|-------------|
+| Channel opening | Confirmed | Finalized |
+| Channel closing | Confirmed | Finalized |
+
+- **Confirmed**: Transaction included in block, may be reverted
+- **Finalized**: Transaction cannot be reverted (chain-specific finality)

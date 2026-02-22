@@ -1,0 +1,92 @@
+---
+title: Economic Attacks
+description: Analysis of griefing, Sybil, front-running, and replay attacks on SeedPay.
+---
+
+## Maximum Loss Per Session
+
+The payment channel design limits maximum loss for both parties:
+
+| Party | Maximum Loss | When | Mitigation |
+|-------|-------------|------|-----------|
+| **Leecher** | Channel deposit (e.g. 0.01 USDC) | Seeder sends no data | Force-close after timeout to recover |
+| **Seeder** | $0 | Leecher stops paying | Stop serving data |
+
+## Griefing Attacks
+
+### Leecher Opens Channel But Never Downloads
+
+1. Leecher opens payment channel (locks 0.01 USDC)
+2. Leecher never requests any pieces
+3. Seeder's capital is not at risk, but channel occupies contract state
+
+**Mitigations:**
+- Channels can be force-closed by Leecher after timeout
+- Seeder can set `min_prepayment` high enough to deter spam
+- Smart contract can charge a small creation fee
+
+### Leecher Requests Data But Sends No Payment Checks
+
+1. Leecher opens valid channel
+2. Requests pieces but never sends payment checks
+3. Seeder serves 1–2 pieces before realizing no payment is coming
+
+**Mitigations:**
+- Seeder requires first payment check before sending ANY data
+- Or sends 1 piece, then waits for payment check before continuing
+- **Maximum loss: ~$0.000025** (cost of 1 piece)
+
+### Seeder Sends Corrupted Data
+
+1. Seeder sends corrupted piece
+2. Leecher detects corruption via BitTorrent hash verification
+3. Leecher stops sending payment checks
+
+**Result:** Leecher loses payment for the corrupted piece only (~$0.000025). Built-in BitTorrent hash verification protects the Leecher.
+
+## Sybil Attacks
+
+### Malicious Seeder Creates Many Identities
+
+- Attacker creates 100 Seeder wallets
+- Advertises content but sends garbage data
+- Each Seeder scams 1 Leecher per day
+
+**Analysis:** Cost to Leecher per scam = 1 piece = $0.000025. Attacker gain = $0.0025/day for 100 seeders. **Not economically rational.**
+
+### Leecher Opens Many Channels, Never Closes
+
+- Leecher opens 1000 channels with different Seeders
+- Deposits $0.01 each = $10 total locked
+- Leecher disappears
+
+**Impact:** Leecher loses $10 (funds locked until timeout). Seeders lose $0. Channels auto-close after timeout. Max timeout of 7 days limits lock duration.
+
+## Front-Running Attacks
+
+### Seeder Front-Runs Channel Close
+
+1. Leecher broadcasts `timeout_close()` transaction
+2. Seeder sees it in mempool
+3. Seeder front-runs with `close_channel()` using an old, low payment check
+
+**Analysis:** The Seeder cannot front-run with a lower amount than the Leecher already signed. The contract enforces monotonically increasing amounts. Even if the Seeder front-runs, they can only claim what the Leecher authorized.
+
+**Result: Attack ineffective.** The protocol is front-run resistant.
+
+## Replay Attacks
+
+### Seeder Reuses Old Payment Check
+
+1. Leecher signs check #5 (amount: 0.005)
+2. Later, Leecher signs check #10 (amount: 0.01)
+3. Seeder tries to close with check #5 (to keep more funds)
+
+**Mitigation:** Smart contract tracks `last_nonce` and only accepts checks with a nonce greater than `last_nonce`.
+
+### Seeder Reuses Check Across Sessions
+
+1. Session A: Leecher signs check for channel A
+2. Session B: Seeder tries to use same check for channel B
+
+**Mitigation:** Payment check includes `channel_id` in the signed message. Check is only valid for the specific channel.

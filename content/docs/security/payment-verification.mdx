@@ -1,0 +1,50 @@
+---
+title: Payment Verification
+description: How SeedPay ensures payment integrity through on-chain verification and cryptographic binding.
+---
+
+## Security Properties
+
+- Seeders MUST verify payments on-chain (blockchain is the source of truth)
+- ECDH binding prevents payment proof replay across different connections
+- Nonce freshness prevents replay of old payments
+- Transaction signature tracking prevents double-spending
+
+## Attack Mitigations
+
+### Fake Payment Proof
+
+**Attack:** Leecher sends a fabricated `channel_opened` message with a fake transaction signature.
+
+**Mitigation:** The Seeder fetches the transaction independently from the blockchain. It ignores the Leecher-provided `amount` field entirely. All validation is done against on-chain state.
+
+### Replay Attack
+
+**Attack:** Leecher tries to reuse a transaction signature from a previous session.
+
+**Mitigation:** The Seeder checks nonce freshness (channel opening must be within 5–10 minutes) and maintains a set of consumed transaction signatures. Any previously-used channel is rejected.
+
+### Man-in-the-Middle Attack
+
+**Attack:** An attacker intercepts the connection and tries to redirect payments.
+
+**Mitigation:** The ECDH key exchange ensures only the two peers with correct ephemeral keys can derive the Session_UUID. The session hash in the memo binds the payment channel to this specific connection. An attacker cannot forge the `Session_UUID` without knowing one of the private keys.
+
+## Peer Authentication
+
+Payment channels require real cryptocurrency deposits, which makes Sybil attacks economically unfeasible. Each channel opening costs transaction fees, limiting spam.
+
+### Current V1 Approach
+
+| Mechanism | Protection |
+|-----------|-----------|
+| Real deposits | Sybil deterrence — attacker must deposit real funds |
+| Transaction fees | Spam prevention — each channel costs gas |
+| Session binding | MITM prevention — ECDH ensures correct counterparty |
+| Nonce tracking | Replay prevention — each session is unique |
+
+### Future Considerations
+
+- Reputation systems for seeders (based on successful channel closes)
+- Rate limiting for channel creation per wallet
+- Proof-of-bandwidth mechanisms if needed

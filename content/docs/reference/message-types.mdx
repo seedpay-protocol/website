@@ -1,0 +1,205 @@
+---
+title: Message Types
+description: Complete reference of all SeedPay extension message formats.
+---
+
+All SeedPay messages are sent over the BEP 10 extension channel using the `"seedpay"` extension ID negotiated during the [handshake](/docs/core-protocol/handshake). Messages are JSON-encoded.
+
+## ECDH Key Exchange
+
+### ecdh_init
+
+Sent by both peers during the [ECDH key exchange](/docs/core-protocol/payment-channels#ephemeral-key-exchange-ecdh).
+
+```json
+{
+  "type": "ecdh_init",
+  "ephemeral_pk": "<32-byte-public-key-hex>"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `type` | string | Always `"ecdh_init"` |
+| `ephemeral_pk` | hex string | 32-byte Curve25519 public key |
+
+## Payment Channel Lifecycle
+
+### channel_opened
+
+Sent by the Leecher after the channel opening transaction is confirmed on-chain.
+
+```json
+{
+  "type": "channel_opened",
+  "tx_signature": "<transaction_signature>",
+  "channel_id": "<channel_identifier>",
+  "amount": 0.01,
+  "timestamp": 1702700000000
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `tx_signature` | string | Blockchain transaction signature |
+| `channel_id` | string | Channel identifier (reference only) |
+| `amount` | number | Deposited amount (UI/logging only, not trusted) |
+| `timestamp` | number | Unix milliseconds when notification was created |
+
+### channel_confirmed
+
+Sent by the Seeder after successful [on-chain verification](/docs/core-protocol/verification).
+
+```json
+{
+  "type": "channel_confirmed",
+  "confirmed": true,
+  "channel_id": "<channel_identifier>",
+  "deposit": 0.01,
+  "price_per_mb": 0.0001,
+  "timeout": 1702703600000
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `confirmed` | boolean | Always `true` |
+| `channel_id` | string | Verified channel identifier |
+| `deposit` | number | Verified deposit amount |
+| `price_per_mb` | number | Agreed price per MB |
+| `timeout` | number | Channel timeout (Unix milliseconds) |
+
+### channel_rejected
+
+Sent by the Seeder when channel verification fails.
+
+```json
+{
+  "type": "channel_rejected",
+  "confirmed": false,
+  "reason": "session_mismatch"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `confirmed` | boolean | Always `false` |
+| `reason` | string | One of the rejection reasons below |
+
+**Rejection reasons:**
+
+| Reason | Description |
+|--------|-------------|
+| `tx_not_found` | Transaction not found on-chain |
+| `tx_failed` | Transaction failed or reverted |
+| `wrong_seeder` | Seeder wallet doesn't match |
+| `insufficient_deposit` | Below `min_prepayment` |
+| `session_mismatch` | Session hash doesn't match ECDH-derived UUID |
+| `replayed_channel` | Channel ID already used |
+| `expired` | Channel opening too old |
+| `invalid_channel_state` | Channel not in Open state |
+
+### channel_closed
+
+Sent by the closing party after a channel is closed.
+
+```json
+{
+  "type": "channel_closed",
+  "channel_id": "<channel_identifier>",
+  "tx_signature": "<closing_transaction_signature>",
+  "final_amount": 0.005,
+  "reason": "cooperative"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `channel_id` | string | Channel identifier |
+| `tx_signature` | string | Closing transaction signature |
+| `final_amount` | number | Final settled amount |
+| `reason` | string | `"cooperative"` or `"timeout"` |
+
+## Payment Checks
+
+### payment_check
+
+Sent by the Leecher during [data transfer](/docs/core-protocol/data-transfer) to authorize cumulative payment.
+
+```json
+{
+  "type": "payment_check",
+  "channel_id": "<channel_identifier>",
+  "amount": 0.005,
+  "nonce": 1,
+  "signature": "<base64_encoded_signature>"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `channel_id` | string | Channel identifier |
+| `amount` | number | Cumulative amount authorized |
+| `nonce` | integer | Monotonically increasing sequence number |
+| `signature` | string | Base64-encoded Ed25519 signature |
+
+### payment_check_required
+
+Sent by the Seeder when the Leecher's payment checks fall behind cumulative cost.
+
+```json
+{
+  "type": "payment_check_required",
+  "required_amount": 0.005,
+  "current_check_amount": 0.003,
+  "estimated_remaining_mb": 20.0
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `required_amount` | number | Amount needed to continue |
+| `current_check_amount` | number | Highest check amount received |
+| `estimated_remaining_mb` | number | Estimated remaining data in MB |
+
+### payment_check_rejected
+
+Sent by the Seeder when a payment check fails validation.
+
+```json
+{
+  "type": "payment_check_rejected",
+  "channel_id": "<channel_identifier>",
+  "reason": "stale_nonce",
+  "expected_nonce": 5,
+  "received_nonce": 3
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `channel_id` | string | Channel identifier |
+| `reason` | string | `"invalid_signature"`, `"stale_nonce"`, `"amount_exceeds_deposit"`, or `"amount_not_increasing"` |
+| `expected_nonce` | integer | Expected nonce value (if applicable) |
+| `received_nonce` | integer | Received nonce value (if applicable) |
+
+## Timeout Warning
+
+### channel_timeout_warning
+
+Sent by the Seeder when the channel timeout approaches.
+
+```json
+{
+  "type": "channel_timeout_warning",
+  "channel_id": "<channel_identifier>",
+  "timeout_in_seconds": 3600,
+  "recommended_action": "open_new_channel"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `channel_id` | string | Channel identifier |
+| `timeout_in_seconds` | integer | Seconds remaining until timeout |
+| `recommended_action` | string | `"open_new_channel"` or `"extend_timeout"` |

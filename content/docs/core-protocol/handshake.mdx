@@ -1,0 +1,89 @@
+---
+title: Handshake Phase
+description: How SeedPay extends the BitTorrent handshake to advertise payment support.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The handshake phase extends the existing BitTorrent peer wire handshake (BEP 3) and extension protocol (BEP 10) to advertise SeedPay support and payment terms — without breaking compatibility with non-SeedPay clients.
+
+## Standard BitTorrent Handshake
+
+When two peers connect over TCP, they first perform the normal BitTorrent handshake as defined in BEP 3:
+
+- The protocol string `"BitTorrent protocol"`
+- An 8-byte `reserved` field used for feature flags
+- The torrent's `info hash`
+- Each peer's 20-byte `peer_id`
+
+SeedPay doesn't modify this message. Instead, it relies on the extension protocol flag in the `reserved` field. If both peers set the BEP 10 "extended messaging" bit, they proceed with the extended handshake.
+
+## Extended Handshake (BEP 10)
+
+Immediately after the standard handshake, peers exchange an extended handshake (BitTorrent message ID `20`, extended ID `0`). The payload is a bencoded dictionary that advertises supported extensions via the `m` map.
+
+SeedPay defines a new extension named `"seedpay"`. A **Seeder** that supports paid seeding MUST include an entry in the `m` dictionary along with payment capabilities:
+
+```json title="Seeder Extended Handshake"
+{
+  "m": {
+    "seedpay": 5,
+    "ut_metadata": 2
+  },
+  "v": "SeedPayClient 0.3",
+  "seedpay": {
+    "wallet": "DYw8jCN...",
+    "price_per_mb": 0.0001,
+    "min_prepayment": 0.01,
+    "chain": "solana"
+  }
+}
+```
+
+The `seedpay` dictionary contains:
+
+| Field | Description |
+|-------|-------------|
+| `wallet` | Seeder's on-chain wallet address for receiving payments |
+| `price_per_mb` | Quoted price in USDC per megabyte |
+| `min_prepayment` | Minimum amount required to start a paid session |
+| `chain` | Settlement chain identifier (e.g. `"solana"`) |
+
+The numeric value `5` is the local extension ID for SeedPay messages on this connection. It is implementation-defined and only needs to be consistent for this peer pair.
+
+A **Leecher** that supports SeedPay also includes `seedpay` in its `m` map:
+
+```json title="Leecher Extended Handshake"
+{
+  "m": {
+    "seedpay": 3
+  },
+  "v": "SeedPayClient 0.3"
+}
+```
+
+## Capability Detection
+
+After both extended handshakes are exchanged, each peer:
+
+1. Checks whether the remote `m` contains `"seedpay"`
+2. Records the remote extension ID for `"seedpay"`
+3. Parses the remote `seedpay` object (if present) to learn the counterparty's wallet and pricing
+
+From the Leecher's perspective, this answers:
+
+| Question | Answer |
+|----------|--------|
+| Does this peer support SeedPay? | Yes, if `"seedpay"` is present in remote `m` map |
+| What are the payment terms? | `seedpay.price_per_mb`, `seedpay.wallet`, `seedpay.min_prepayment` |
+
+Based on this, the Leecher classifies the peer as:
+
+- **Free-only** (no `seedpay` entry) — standard BitTorrent behavior
+- **Paid seeder** (SeedPay with pricing) — can open a payment channel
+
+<Callout>
+  If either side's extended handshake does not include `"seedpay"` in `m`, the connection continues as a normal BitTorrent session without payments.
+</Callout>
+
+Only after handshake completes does the protocol move to the [Payment Channel Setup](/docs/core-protocol/payment-channels).

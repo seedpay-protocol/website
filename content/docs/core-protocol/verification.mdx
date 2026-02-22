@@ -1,0 +1,131 @@
+---
+title: Verification Phase
+description: How seeders independently verify payment channels on-chain before serving data.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+In the verification phase, the Seeder independently checks the on-chain payment channel before opening a paid session. The Seeder treats the **blockchain as the source of truth** and MUST NOT rely solely on the `channel_opened` message contents.
+
+## On-Chain Channel Lookup
+
+Upon receiving a `channel_opened` message, the Seeder performs a read-only lookup using the provided `tx_signature`. The Seeder MUST:
+
+1. Fetch the transaction by `tx_signature` from a trusted RPC endpoint
+2. Reject if the transaction cannot be found or hasn't reached at least **confirmed** status
+3. Parse the transaction to locate:
+   - The channel creation instruction
+   - The escrow account holding deposited funds
+   - The deposited amount
+   - The channel state (leecher, seeder, timeout, etc.)
+   - Any memo instruction attached to the transaction
+
+If any of these steps fail, the Seeder MUST treat the channel as invalid.
+
+## Validation Rules
+
+A payment channel is considered **valid** only if ALL of the following checks pass:
+
+### 1. Channel State Check
+
+- The channel MUST exist on-chain and be in an `"Open"` state
+- The Seeder's wallet address in the channel state MUST equal the Seeder's configured wallet
+
+### 2. Deposit Amount Check
+
+- The deposited amount MUST be ≥ the Seeder's `min_prepayment`
+- The Seeder MAY also enforce a maximum deposit policy
+
+### 3. Token Check
+
+- The escrow MUST hold the expected token (e.g. USDC) on the expected chain
+
+### 4. Session Binding Check (Privacy-Preserving)
+
+The memo MUST match the SeedPay format:
+
+```json
+{
+  "protocol": "seedpay",
+  "version": "1.0",
+  "session_hash": "<hex-string>",
+  "nonce": 1702700000000
+}
+```
+
+The Seeder computes `expected_hash = SHA-256(Session_UUID)` using the Session_UUID derived during [ECDH key exchange](/docs/core-protocol/payment-channels#ephemeral-key-exchange-ecdh). The `session_hash` in the memo MUST equal `expected_hash`.
+
+This proves the channel is bound to **this specific connection** without revealing peer_id or IP information.
+
+### 5. Freshness / Replay Protection
+
+- The channel opening MUST be recent: `nonce` or block time within 5–10 minutes
+- The Seeder MUST maintain a set of already-used channel identifiers and reject duplicates
+
+### 6. Error-Free Execution
+
+- The transaction metadata MUST indicate success — any failed or reverted transaction is invalid
+
+## Seeder Response
+
+### On Success
+
+The Seeder:
+
+1. Creates a **payment session** with initial state:
+
+   | Field | Value |
+   |-------|-------|
+   | `channel_id` | Verified channel identifier |
+   | `channel_deposit` | Verified deposited amount |
+   | `last_check_nonce` | 0 |
+   | `last_check_amount` | 0 |
+   | `bytes_downloaded` | 0 |
+   | `price_per_mb` | Value from handshake |
+   | `channel_timeout` | Timeout from channel state |
+
+2. Sends a `channel_confirmed` message:
+
+   ```json
+   {
+     "type": "channel_confirmed",
+     "confirmed": true,
+     "channel_id": "<channel_identifier>",
+     "deposit": 0.01,
+     "price_per_mb": 0.0001,
+     "timeout": 1702703600000
+   }
+   ```
+
+3. **Unchokes** the Leecher on the BitTorrent wire, allowing piece requests.
+
+### On Failure
+
+The Seeder sends a `channel_rejected` message and keeps the Leecher choked:
+
+```json
+{
+  "type": "channel_rejected",
+  "confirmed": false,
+  "reason": "session_mismatch"
+}
+```
+
+Possible rejection reasons:
+
+| Reason | Description |
+|--------|-------------|
+| `tx_not_found` | Transaction not found on-chain |
+| `tx_failed` | Transaction failed or reverted |
+| `wrong_seeder` | Seeder wallet doesn't match |
+| `insufficient_deposit` | Below `min_prepayment` |
+| `session_mismatch` | Session hash doesn't match ECDH-derived UUID |
+| `replayed_channel` | Channel ID already used |
+| `expired` | Channel opening too old |
+| `invalid_channel_state` | Channel not in Open state |
+
+<Callout>
+  The Seeder MAY allow the Leecher to retry with a new channel opening, or MAY close the connection according to local policy.
+</Callout>
+
+Once verified, the protocol transitions to [Data Transfer](/docs/core-protocol/data-transfer).

@@ -1,0 +1,51 @@
+---
+title: Protocol Overview
+description: The four phases of the SeedPay payment protocol flow.
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+The SeedPay payment flow consists of four sequential phases:
+
+<Steps>
+  <Step>
+    ### Handshake
+
+    Peers exchange BEP 10 extended handshakes to advertise SeedPay support and payment terms (wallet, price, chain). Non-SeedPay clients are unaffected.
+  </Step>
+  <Step>
+    ### Payment Channel Setup
+
+    The Leecher and Seeder perform an ECDH key exchange to derive an ephemeral Session UUID. The Leecher then opens a unidirectional payment channel by depositing USDC into an on-chain escrow.
+  </Step>
+  <Step>
+    ### Verification
+
+    The Seeder independently verifies the payment channel on-chain — checking the deposit amount, session binding, and freshness. Only after verification does the Seeder unchoke the Leecher.
+  </Step>
+  <Step>
+    ### Data Transfer
+
+    Standard BitTorrent piece requests proceed. The Leecher sends signed off-chain payment checks as data is downloaded. The Seeder tracks cumulative cost and pauses if payment checks fall behind.
+  </Step>
+</Steps>
+
+## Key Properties
+
+| Property | How |
+|----------|-----|
+| **Micropayments** | As low as $0.0001/MB via streaming payment checks |
+| **Low on-chain cost** | Only 2 transactions per session (open + close channel) |
+| **Privacy** | ECDH session keys — no peer_id or IP on-chain |
+| **Fair exchange** | Seeder only serves data when payment checks are sufficient |
+| **Forward secrecy** | Ephemeral keys deleted after session |
+
+## Deep Dive
+
+<Cards>
+  <Card title="Handshake Phase" href="/docs/core-protocol/handshake" />
+  <Card title="Payment Channels" href="/docs/core-protocol/payment-channels" />
+  <Card title="Verification" href="/docs/core-protocol/verification" />
+  <Card title="Data Transfer" href="/docs/core-protocol/data-transfer" />
+</Cards>
