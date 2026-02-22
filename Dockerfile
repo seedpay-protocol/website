@@ -1,11 +1,12 @@
 FROM node:22-alpine AS base
+RUN npm install -g pnpm
 
 # --- Dependencies ---
 FROM base AS dependencies
 WORKDIR /app
 RUN apk add --no-cache libc6-compat
 COPY package.json pnpm-lock.yaml ./
-RUN corepack enable pnpm && pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 # --- Builder ---
 FROM base AS builder
@@ -16,10 +17,10 @@ COPY . .
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN corepack enable pnpm && pnpm build
+RUN pnpm build
 
 # --- Runner ---
-FROM base AS runner
+FROM node:22-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
