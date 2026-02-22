@@ -6,7 +6,7 @@ FROM base AS dependencies
 WORKDIR /app
 RUN apk add --no-cache libc6-compat
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # --- Builder ---
 FROM base AS builder
@@ -17,7 +17,7 @@ COPY . .
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN pnpm build
+RUN pnpm run postinstall && pnpm build
 
 # --- Runner ---
 FROM node:22-alpine AS runner
