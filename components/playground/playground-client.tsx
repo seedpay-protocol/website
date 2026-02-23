@@ -24,12 +24,12 @@ export function PlaygroundClient() {
     state.phase !== "handshake";
 
   return (
-    <div className="min-h-screen bg-fd-background">
+    <div className="min-h-screen text-fd-foreground">
       <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-fd-foreground">
+            <h1 className="text-2xl font-bold">
               Protocol Playground
             </h1>
             <p className="text-sm text-fd-muted-foreground mt-1">
@@ -41,7 +41,7 @@ export function PlaygroundClient() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               onClick={() => dispatch({ type: "RESET" })}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-xs font-mono text-white/40 hover:text-white/60 transition-all shrink-0"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-fd-muted hover:bg-fd-accent border border-fd-border text-xs font-mono text-fd-muted-foreground hover:text-fd-foreground transition-all shrink-0"
             >
               <RotateCcw className="size-3" />
               Reset
@@ -50,15 +50,15 @@ export function PlaygroundClient() {
         </div>
 
         {/* Terminal-style container */}
-        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl overflow-hidden">
+        <div className="rounded-2xl border border-fd-border bg-fd-card backdrop-blur-xl overflow-hidden">
           {/* macOS traffic lights header */}
-          <div className="flex items-center gap-2 px-5 py-3 border-b border-white/[0.06]">
+          <div className="flex items-center gap-2 px-5 py-3 border-b border-fd-border">
             <div className="flex gap-1.5">
               <span className="size-2.5 rounded-full bg-[#ff5f57]" />
               <span className="size-2.5 rounded-full bg-[#febc2e]" />
               <span className="size-2.5 rounded-full bg-[#28c840]" />
             </div>
-            <span className="ml-3 text-[11px] text-white/25 font-mono tracking-wider">
+            <span className="ml-3 text-[11px] text-fd-muted-foreground/50 font-mono tracking-wider">
               seedpay://playground
             </span>
           </div>

@@ -45,14 +45,14 @@ export function PhaseStepper({ currentPhase }: { currentPhase: Phase }) {
                   "w-6 h-px mx-1 transition-colors duration-500",
                   status === "done" || status === "active"
                     ? "bg-emerald-500/30"
-                    : "bg-white/[0.06]",
+                    : "bg-fd-border",
                 )}
               />
             )}
             <div
               className={cn(
                 "flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-400",
-                status === "active" && "bg-white/[0.04]",
+                status === "active" && "bg-fd-accent",
               )}
             >
               <div className="relative">
@@ -62,8 +62,8 @@ export function PhaseStepper({ currentPhase }: { currentPhase: Phase }) {
                     status === "done" &&
                       "border-emerald-500/40 bg-emerald-500/10 text-emerald-400",
                     status === "active" &&
-                      "border-white/25 bg-white/[0.06] text-white/70",
-                    status === "pending" && "border-white/[0.08] text-white/15",
+                      "border-fd-foreground/25 bg-fd-accent text-fd-foreground/70",
+                    status === "pending" && "border-fd-border text-fd-muted-foreground/30",
                   )}
                 >
                   {status === "done" ? (
@@ -80,7 +80,7 @@ export function PhaseStepper({ currentPhase }: { currentPhase: Phase }) {
                 </div>
                 {status === "active" && (
                   <motion.div
-                    className="absolute inset-0 rounded-full border border-white/15"
+                    className="absolute inset-0 rounded-full border border-fd-foreground/15"
                     animate={{ scale: [1, 1.6], opacity: [0.4, 0] }}
                     transition={{ duration: 1.8, repeat: Infinity }}
                   />
@@ -89,9 +89,9 @@ export function PhaseStepper({ currentPhase }: { currentPhase: Phase }) {
               <span
                 className={cn(
                   "text-[11px] font-mono whitespace-nowrap transition-colors duration-500",
-                  status === "done" && "text-white/40",
-                  status === "active" && "text-white/70",
-                  status === "pending" && "text-white/15",
+                  status === "done" && "text-fd-muted-foreground",
+                  status === "active" && "text-fd-foreground/70",
+                  status === "pending" && "text-fd-muted-foreground/30",
                 )}
               >
                 {step.label}

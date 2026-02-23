@@ -49,55 +49,55 @@ export function PhaseDataTransfer({
     <div className="space-y-5">
       {/* Stats grid */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3">
-          <div className="text-[9px] font-mono text-white/20 uppercase tracking-wider mb-1">
+        <div className="rounded-lg border border-fd-border bg-fd-card p-3">
+          <div className="text-[9px] font-mono text-fd-muted-foreground/40 uppercase tracking-wider mb-1">
             Downloaded
           </div>
           <div className="text-base font-mono text-sky-400/80">
             {transfer.mbDownloaded.toFixed(0)} MB
           </div>
         </div>
-        <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3">
-          <div className="text-[9px] font-mono text-white/20 uppercase tracking-wider mb-1">
+        <div className="rounded-lg border border-fd-border bg-fd-card p-3">
+          <div className="text-[9px] font-mono text-fd-muted-foreground/40 uppercase tracking-wider mb-1">
             Total Paid
           </div>
           <div className="text-base font-mono text-emerald-400/80">
             ${transfer.totalCost.toFixed(4)}
           </div>
         </div>
-        <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3">
-          <div className="text-[9px] font-mono text-white/20 uppercase tracking-wider mb-1">
+        <div className="rounded-lg border border-fd-border bg-fd-card p-3">
+          <div className="text-[9px] font-mono text-fd-muted-foreground/40 uppercase tracking-wider mb-1">
             Checks Sent
           </div>
-          <div className="text-base font-mono text-white/60">
+          <div className="text-base font-mono text-fd-foreground/60">
             {transfer.lastCheckNonce}
           </div>
         </div>
-        <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3">
-          <div className="text-[9px] font-mono text-white/20 uppercase tracking-wider mb-1">
+        <div className="rounded-lg border border-fd-border bg-fd-card p-3">
+          <div className="text-[9px] font-mono text-fd-muted-foreground/40 uppercase tracking-wider mb-1">
             Rate
           </div>
-          <div className="text-base font-mono text-white/60">
+          <div className="text-base font-mono text-fd-foreground/60">
             ${PRICE_PER_MB}/MB
           </div>
         </div>
       </div>
 
       {/* Payment check progress indicator */}
-      <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3">
+      <div className="rounded-lg border border-fd-border bg-fd-card p-3">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[9px] font-mono text-white/20 uppercase tracking-wider">
+          <span className="text-[9px] font-mono text-fd-muted-foreground/40 uppercase tracking-wider">
             MB since last check
           </span>
           <span
             className={`text-[9px] font-mono ${
-              checkUrgency >= 1 ? "text-red-400/70" : checkUrgency >= 0.7 ? "text-amber-400/70" : "text-white/30"
+              checkUrgency >= 1 ? "text-red-400/70" : checkUrgency >= 0.7 ? "text-amber-400/70" : "text-fd-muted-foreground/60"
             }`}
           >
             {transfer.mbSinceLastCheck.toFixed(0)} / {CHECK_INTERVAL_MB} MB
           </span>
         </div>
-        <div className="h-1.5 rounded-full bg-white/[0.04] overflow-hidden">
+        <div className="h-1.5 rounded-full bg-fd-muted overflow-hidden">
           <motion.div
             className={`h-full rounded-full transition-colors ${
               checkUrgency >= 1
@@ -169,7 +169,7 @@ export function PhaseDataTransfer({
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono transition-all ${
             needsCheck
               ? "bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-400"
-              : "bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-white/70"
+              : "bg-fd-muted hover:bg-fd-accent border border-fd-border text-fd-foreground/70"
           }`}
         >
           <PenLine className="size-3" />
@@ -180,7 +180,7 @@ export function PhaseDataTransfer({
           onClick={() => dispatch({ type: "CLOSE_CHANNEL" })}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-xs font-mono text-white/40 hover:text-white/60 transition-all"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-fd-muted hover:bg-fd-accent border border-fd-border text-xs font-mono text-fd-muted-foreground hover:text-fd-foreground transition-all"
         >
           <Square className="size-3" />
           Close Channel

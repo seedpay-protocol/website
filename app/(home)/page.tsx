@@ -60,7 +60,8 @@ const features = [
 
 function Features() {
   return (
-    <section className="px-4 py-16 max-w-6xl mx-auto">
+    <section className="relative px-4 py-16 max-w-6xl mx-auto">
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,hsl(142_71%_45%/0.08)_0%,transparent_70%)]" />
       <AnimateOnScroll>
         <h2 className="text-2xl font-bold text-center mb-2">
           Why <span className="text-fd-primary">SeedPay</span>?
@@ -72,8 +73,9 @@ function Features() {
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {features.map((f, i) => (
           <AnimateOnScroll key={f.title} delay={i * 80}>
-            <div className="group rounded-xl border border-fd-border bg-fd-card p-6 h-full hover:border-fd-primary/40 transition-all hover:shadow-[0_0_24px_-6px] hover:shadow-fd-primary/10">
-              <div className="inline-flex items-center justify-center size-10 rounded-lg bg-fd-primary/10 text-fd-primary mb-4 group-hover:bg-fd-primary/15 transition-colors">
+            <div className="group relative rounded-xl border border-fd-primary/20 bg-fd-primary/3 p-6 h-full hover:border-fd-primary/50 transition-all hover:shadow-[0_0_24px_-6px] hover:shadow-fd-primary/20 overflow-hidden">
+              <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-fd-primary/40 to-transparent" />
+              <div className="inline-flex items-center justify-center size-10 rounded-lg bg-fd-primary/15 text-fd-primary mb-4 group-hover:bg-fd-primary/25 transition-colors">
                 <f.icon className="size-5" />
               </div>
               <h3 className="font-semibold mb-2">{f.title}</h3>
@@ -117,7 +119,7 @@ const steps = [
 
 function ProtocolFlow() {
   return (
-    <section className="px-4 py-16 max-w-5xl mx-auto">
+    <section className="relative px-4 py-16 max-w-5xl mx-auto">
       <AnimateOnScroll>
         <h2 className="text-2xl font-bold text-center mb-2">How It Works</h2>
         <p className="text-fd-muted-foreground text-center mb-12 max-w-xl mx-auto">
@@ -127,8 +129,9 @@ function ProtocolFlow() {
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {steps.map((s, i) => (
           <AnimateOnScroll key={s.title} delay={i * 120}>
-            <div className="relative rounded-xl border border-fd-border bg-fd-card p-6 h-full hover:border-fd-primary/40 transition-all hover:shadow-[0_0_24px_-6px] hover:shadow-fd-primary/10">
-              <div className="inline-flex items-center justify-center size-10 rounded-full bg-fd-primary text-fd-primary-foreground mb-4">
+            <div className="relative rounded-xl border border-fd-primary/20 bg-fd-primary/5 p-6 h-full hover:border-fd-primary/50 transition-all hover:shadow-[0_0_24px_-6px] hover:shadow-fd-primary/20 overflow-hidden">
+              <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-fd-primary/40 to-transparent" />
+              <div className="inline-flex items-center justify-center size-10 rounded-full bg-fd-primary text-fd-primary-foreground mb-4 shadow-[0_0_20px_-2px] shadow-fd-primary/30">
                 <s.icon className="size-5" />
               </div>
               <div className="text-xs font-medium text-fd-primary/60 font-mono mb-1">
@@ -208,7 +211,8 @@ function Comparison() {
   ];
 
   return (
-    <section className="px-4 py-16 max-w-4xl mx-auto">
+    <section className="relative px-4 py-16 max-w-4xl mx-auto">
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,hsl(142_71%_45%/0.07)_0%,transparent_60%)]" />
       <AnimateOnScroll>
         <h2 className="text-2xl font-bold text-center mb-2">
           Compared to Alternatives
@@ -218,10 +222,10 @@ function Comparison() {
         </p>
       </AnimateOnScroll>
       <AnimateOnScroll delay={100}>
-        <div className="overflow-x-auto rounded-xl border border-fd-border">
+        <div className="overflow-x-auto rounded-xl border border-fd-primary/20 overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-fd-border bg-fd-card">
+              <tr className="border-b border-fd-primary/15 bg-fd-primary/5">
                 <th className="text-left p-4 font-semibold">Feature</th>
                 <th className="p-4 font-semibold text-fd-primary">SeedPay</th>
                 <th className="p-4 font-semibold text-fd-muted-foreground">Tit-for-tat</th>
@@ -233,12 +237,12 @@ function Comparison() {
               {rows.map((row) => (
                 <tr
                   key={row.feature}
-                  className="border-b border-fd-border last:border-0"
+                  className="border-b border-fd-border/60 last:border-0 hover:bg-fd-primary/5 transition-colors"
                 >
                   <td className="p-4 text-fd-muted-foreground">
                     {row.feature}
                   </td>
-                  <td className="p-4 bg-fd-primary/[0.03]">
+                  <td className="p-4 bg-fd-primary/8">
                     <Cell value={row.seedpay} />
                   </td>
                   <td className="p-4">
@@ -262,7 +266,8 @@ function Comparison() {
 
 function Economics() {
   return (
-    <section className="px-4 py-16 max-w-4xl mx-auto">
+    <section className="relative px-4 py-16 max-w-4xl mx-auto">
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_bottom,hsl(142_71%_45%/0.08)_0%,transparent_70%)]" />
       <AnimateOnScroll>
         <h2 className="text-2xl font-bold text-center mb-2">
           Circular Economy
@@ -292,7 +297,8 @@ function Economics() {
           },
         ].map((item, i) => (
           <AnimateOnScroll key={item.stat} delay={i * 100}>
-            <div className="rounded-xl border border-fd-border bg-fd-card p-6 text-center h-full hover:border-fd-primary/40 transition-all hover:shadow-[0_0_24px_-6px] hover:shadow-fd-primary/10">
+            <div className="relative rounded-xl border border-fd-primary/20 bg-fd-primary/3 p-6 text-center h-full hover:border-fd-primary/50 transition-all hover:shadow-[0_0_24px_-6px] hover:shadow-fd-primary/20 overflow-hidden">
+              <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-fd-primary/40 to-transparent" />
               <div className="text-3xl font-bold text-fd-primary mb-2">
                 {item.stat}
               </div>
@@ -307,12 +313,12 @@ function Economics() {
         ))}
       </div>
       <AnimateOnScroll delay={150}>
-        <div className="mt-8 rounded-xl border border-fd-border bg-fd-card p-6">
+        <div className="mt-8 rounded-xl border border-fd-primary/25 bg-fd-primary/5 p-6">
           <h3 className="font-semibold mb-4">Example: The Seeder Economy</h3>
           <div className="grid gap-4 sm:grid-cols-3 text-sm">
             <div>
               <div className="text-fd-muted-foreground mb-1">Seed 10 GB</div>
-              <div className="font-medium">Earn ~0.10 USDC</div>
+              <div className="font-medium text-emerald-500 dark:text-emerald-400">Earn ~0.10 USDC</div>
             </div>
             <div>
               <div className="text-fd-muted-foreground mb-1">Download 5 GB</div>
@@ -335,7 +341,7 @@ function CTA() {
   return (
     <AnimateOnScroll>
       <section className="px-4 py-20 text-center">
-        <div className="mx-auto max-w-2xl rounded-2xl border border-fd-primary/20 bg-fd-primary/5 px-8 py-12">
+        <div className="mx-auto max-w-2xl rounded-2xl border border-fd-primary/30 bg-fd-primary/8 px-8 py-12">
           <h2 className="text-2xl font-bold mb-4">Read the Protocol</h2>
           <p className="text-fd-muted-foreground mb-8 max-w-lg mx-auto">
             SeedPay is an open RFC. Explore the full specification, security

@@ -25,11 +25,11 @@ function stepStatus(current: SubStep, target: SubStep): "done" | "active" | "pen
   return "pending";
 }
 
-function HexReveal({ value, label, color }: { value: string; label: string; color: "sky" | "emerald" | "white" }) {
+function HexReveal({ value, label, color }: { value: string; label: string; color: "sky" | "emerald" | "neutral" }) {
   const colorClasses = {
     sky: "border-sky-500/20 text-sky-400/60",
     emerald: "border-emerald-500/20 text-emerald-400/60",
-    white: "border-white/10 text-white/40",
+    neutral: "border-fd-border text-fd-muted-foreground",
   }[color];
 
   return (
@@ -37,7 +37,7 @@ function HexReveal({ value, label, color }: { value: string; label: string; colo
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.4 }}
-      className={`rounded-lg border p-3 bg-black/20 ${colorClasses}`}
+      className={`rounded-lg border p-3 bg-fd-background/80 ${colorClasses}`}
     >
       <div className="text-[9px] font-mono uppercase tracking-wider mb-1.5 opacity-60">
         {label}
@@ -76,7 +76,7 @@ export function PhaseChannelSetup({
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.05, duration: 0.25 }}
               className={`flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all duration-400 ${
-                status === "active" ? "bg-white/[0.04]" : ""
+                status === "active" ? "bg-fd-accent" : ""
               }`}
             >
               <div
@@ -84,8 +84,8 @@ export function PhaseChannelSetup({
                   status === "done"
                     ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400"
                     : status === "active"
-                      ? "border-white/25 bg-white/[0.06] text-white/60"
-                      : "border-white/[0.08] text-white/15"
+                      ? "border-fd-foreground/25 bg-fd-accent text-fd-foreground/60"
+                      : "border-fd-border text-fd-muted-foreground/30"
                 }`}
               >
                 {status === "done" ? (
@@ -97,10 +97,10 @@ export function PhaseChannelSetup({
               <span
                 className={`text-[11px] font-mono transition-colors duration-500 ${
                   status === "done"
-                    ? "text-white/40"
+                    ? "text-fd-muted-foreground"
                     : status === "active"
-                      ? "text-white/80"
-                      : "text-white/15"
+                      ? "text-fd-foreground/80"
+                      : "text-fd-muted-foreground/30"
                 }`}
               >
                 {s.label}
@@ -150,7 +150,7 @@ export function PhaseChannelSetup({
                 <HexReveal value={crypto.seederEphemeralPk!} label="Seeder PK" color="emerald" />
               </div>
             </div>
-            <HexReveal value={crypto.sharedSecret} label="Shared Secret (Curve25519)" color="white" />
+            <HexReveal value={crypto.sharedSecret} label="Shared Secret (Curve25519)" color="neutral" />
           </motion.div>
         )}
 
@@ -158,14 +158,14 @@ export function PhaseChannelSetup({
         {crypto.sessionUuid && subStep === "cs:session-uuid" && (
           <motion.div key="uuid" exit={{ opacity: 0 }} className="space-y-2">
             <div className="opacity-30">
-              <HexReveal value={crypto.sharedSecret!} label="Shared Secret" color="white" />
+              <HexReveal value={crypto.sharedSecret!} label="Shared Secret" color="neutral" />
             </div>
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <HexReveal value={crypto.sessionUuid} label="Session UUID (HKDF → seedpay-v1-session)" color="white" />
+              <HexReveal value={crypto.sessionUuid} label="Session UUID (HKDF → seedpay-v1-session)" color="neutral" />
             </motion.div>
           </motion.div>
         )}
@@ -177,10 +177,10 @@ export function PhaseChannelSetup({
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4 space-y-4"
+            className="rounded-xl border border-fd-border bg-fd-card p-4 space-y-4"
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono text-white/40">Deposit Amount</span>
+              <span className="text-xs font-mono text-fd-muted-foreground">Deposit Amount</span>
               <span className="text-lg font-mono text-emerald-400 font-semibold">
                 {channel.deposit.toFixed(2)} USDC
               </span>
@@ -194,9 +194,9 @@ export function PhaseChannelSetup({
               onChange={(e) =>
                 dispatch({ type: "SET_DEPOSIT", amount: parseFloat(e.target.value) })
               }
-              className="w-full accent-emerald-500 h-1.5 bg-white/[0.06] rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:size-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-emerald-400 [&::-webkit-slider-thumb]:shadow-[0_0_10px_rgba(52,211,153,0.4)]"
+              className="w-full accent-emerald-500 h-1.5 bg-fd-muted rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:size-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-emerald-400 [&::-webkit-slider-thumb]:shadow-[0_0_10px_rgba(52,211,153,0.4)]"
             />
-            <div className="flex justify-between text-[9px] font-mono text-white/20">
+            <div className="flex justify-between text-[9px] font-mono text-fd-muted-foreground/40">
               <span>$0.01</span>
               <span>Max downloadable: ~{Math.floor(channel.deposit / 0.0001)} MB</span>
               <span>$50.00</span>
@@ -218,7 +218,7 @@ export function PhaseChannelSetup({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           onClick={() => dispatch({ type: "NEXT_STEP" })}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-xs font-mono text-white/70 transition-all"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-fd-muted hover:bg-fd-accent border border-fd-border text-xs font-mono text-fd-foreground/70 transition-all"
         >
           {subStep === "cs:choose-deposit" ? (
             <>

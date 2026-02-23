@@ -47,7 +47,7 @@ export function PhaseHandshake({
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.08, duration: 0.3 }}
               className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-400 ${
-                status === "active" ? "bg-white/[0.04]" : ""
+                status === "active" ? "bg-fd-accent" : ""
               }`}
             >
               <div className="relative shrink-0">
@@ -56,8 +56,8 @@ export function PhaseHandshake({
                     status === "done"
                       ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400"
                       : status === "active"
-                        ? "border-white/25 bg-white/[0.06] text-white/60"
-                        : "border-white/[0.08] text-white/15"
+                        ? "border-fd-foreground/25 bg-fd-accent text-fd-foreground/60"
+                        : "border-fd-border text-fd-muted-foreground/30"
                   }`}
                 >
                   {status === "done" ? (
@@ -74,7 +74,7 @@ export function PhaseHandshake({
                 </div>
                 {status === "active" && (
                   <motion.div
-                    className="absolute inset-0 rounded-full border border-white/10"
+                    className="absolute inset-0 rounded-full border border-fd-foreground/10"
                     animate={{ scale: [1, 1.5], opacity: [0.3, 0] }}
                     transition={{ duration: 1.5, repeat: Infinity }}
                   />
@@ -83,10 +83,10 @@ export function PhaseHandshake({
               <span
                 className={`text-xs font-mono transition-colors duration-500 ${
                   status === "done"
-                    ? "text-white/40"
+                    ? "text-fd-muted-foreground"
                     : status === "active"
-                      ? "text-white/80"
-                      : "text-white/15"
+                      ? "text-fd-foreground/80"
+                      : "text-fd-muted-foreground/30"
                 }`}
               >
                 {s.label}
@@ -112,7 +112,7 @@ export function PhaseHandshake({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             onClick={() => dispatch({ type: "NEXT_STEP" })}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-xs font-mono text-white/70 transition-all"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-fd-muted hover:bg-fd-accent border border-fd-border text-xs font-mono text-fd-foreground/70 transition-all"
           >
             Next Step
             <ArrowRight className="size-3" />

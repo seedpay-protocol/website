@@ -40,14 +40,14 @@ function CheckIcon({ status }: { status: "done" | "active" | "pending" }) {
   }
   if (status === "active") {
     return (
-      <div className="size-5 rounded-full border border-white/20 bg-white/[0.04] flex items-center justify-center">
-        <Loader2 className="size-2.5 text-white/50 animate-spin" />
+      <div className="size-5 rounded-full border border-fd-foreground/20 bg-fd-accent flex items-center justify-center">
+        <Loader2 className="size-2.5 text-fd-muted-foreground animate-spin" />
       </div>
     );
   }
   return (
-    <div className="size-5 rounded-full border border-white/[0.06] flex items-center justify-center">
-      <div className="size-1.5 rounded-full bg-white/10" />
+    <div className="size-5 rounded-full border border-fd-border flex items-center justify-center">
+      <div className="size-1.5 rounded-full bg-fd-muted-foreground/20" />
     </div>
   );
 }
@@ -82,7 +82,7 @@ export function PhaseVerification({
               key={s.step}
               layout
               className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-300 ${
-                status === "active" ? "bg-white/[0.03]" : ""
+                status === "active" ? "bg-fd-accent" : ""
               }`}
             >
               <CheckIcon status={status} />
@@ -90,10 +90,10 @@ export function PhaseVerification({
                 <span
                   className={`text-xs font-mono transition-colors duration-500 ${
                     status === "done"
-                      ? "text-white/50"
+                      ? "text-fd-muted-foreground"
                       : status === "active"
-                        ? "text-white/80"
-                        : "text-white/15"
+                        ? "text-fd-foreground/80"
+                        : "text-fd-muted-foreground/30"
                   }`}
                 >
                   {s.label}
@@ -102,7 +102,7 @@ export function PhaseVerification({
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="text-[9px] font-mono text-white/25 mt-0.5"
+                    className="text-[9px] font-mono text-fd-muted-foreground/50 mt-0.5"
                   >
                     {s.detail}
                   </motion.div>
@@ -123,14 +123,14 @@ export function PhaseVerification({
       </div>
 
       {/* Channel info badge */}
-      <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3">
+      <div className="rounded-lg border border-fd-border bg-fd-card p-3">
         <div className="grid grid-cols-2 gap-3 text-[10px] font-mono">
           <div>
-            <span className="text-white/20">Channel</span>
-            <div className="text-white/50 mt-0.5">{channel.channelId}</div>
+            <span className="text-fd-muted-foreground/40">Channel</span>
+            <div className="text-fd-muted-foreground mt-0.5">{channel.channelId}</div>
           </div>
           <div>
-            <span className="text-white/20">Deposit</span>
+            <span className="text-fd-muted-foreground/40">Deposit</span>
             <div className="text-emerald-400/60 mt-0.5">{channel.deposit.toFixed(2)} USDC</div>
           </div>
         </div>
@@ -149,7 +149,7 @@ export function PhaseVerification({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           onClick={() => dispatch({ type: "NEXT_STEP" })}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-xs font-mono text-white/70 transition-all"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-fd-muted hover:bg-fd-accent border border-fd-border text-xs font-mono text-fd-foreground/70 transition-all"
         >
           Run Next Check
           <ArrowRight className="size-3" />

@@ -32,11 +32,11 @@ export function PhaseClose({
         {/* Tx submitted */}
         <div
           className={`flex items-center gap-3 px-3 py-2 rounded-lg ${
-            subStep === "cl:tx-submitted" ? "bg-white/[0.03]" : ""
+            subStep === "cl:tx-submitted" ? "bg-fd-accent" : ""
           }`}
         >
           {subStep === "cl:tx-submitted" ? (
-            <Loader2 className="size-4 text-white/40 animate-spin" />
+            <Loader2 className="size-4 text-fd-muted-foreground animate-spin" />
           ) : (
             <motion.div
               initial={{ scale: 0 }}
@@ -48,7 +48,7 @@ export function PhaseClose({
           )}
           <span
             className={`text-xs font-mono ${
-              subStep === "cl:tx-submitted" ? "text-white/60" : "text-white/40"
+              subStep === "cl:tx-submitted" ? "text-fd-foreground/60" : "text-fd-muted-foreground"
             }`}
           >
             Close Transaction{" "}
@@ -64,7 +64,7 @@ export function PhaseClose({
             className="flex items-center gap-3 px-3 py-2 rounded-lg"
           >
             <Check className="size-4 text-emerald-400" />
-            <span className="text-xs font-mono text-white/40">Settlement Complete</span>
+            <span className="text-xs font-mono text-fd-muted-foreground">Settlement Complete</span>
           </motion.div>
         )}
 
@@ -75,7 +75,7 @@ export function PhaseClose({
             className="flex items-center gap-3 px-3 py-2 rounded-lg"
           >
             <Check className="size-4 text-emerald-400" />
-            <span className="text-xs font-mono text-white/40">Channel Closed</span>
+            <span className="text-xs font-mono text-fd-muted-foreground">Channel Closed</span>
           </motion.div>
         )}
       </div>
@@ -93,7 +93,7 @@ export function PhaseClose({
           </h4>
           <div className="grid grid-cols-2 gap-3 text-sm font-mono">
             <div>
-              <div className="text-[9px] text-white/20 uppercase mb-1">
+              <div className="text-[9px] text-fd-muted-foreground/40 uppercase mb-1">
                 Data Transferred
               </div>
               <div className="text-sky-400/70">
@@ -101,7 +101,7 @@ export function PhaseClose({
               </div>
             </div>
             <div>
-              <div className="text-[9px] text-white/20 uppercase mb-1">
+              <div className="text-[9px] text-fd-muted-foreground/40 uppercase mb-1">
                 Total Paid
               </div>
               <div className="text-emerald-400/70">
@@ -109,7 +109,7 @@ export function PhaseClose({
               </div>
             </div>
             <div>
-              <div className="text-[9px] text-white/20 uppercase mb-1">
+              <div className="text-[9px] text-fd-muted-foreground/40 uppercase mb-1">
                 Seeder Received
               </div>
               <div className="text-emerald-400/70">
@@ -117,13 +117,13 @@ export function PhaseClose({
               </div>
             </div>
             <div>
-              <div className="text-[9px] text-white/20 uppercase mb-1">
+              <div className="text-[9px] text-fd-muted-foreground/40 uppercase mb-1">
                 Leecher Refunded
               </div>
               <div className="text-sky-400/70">${refund.toFixed(4)}</div>
             </div>
           </div>
-          <div className="pt-2 border-t border-white/[0.04] text-[9px] font-mono text-white/20">
+          <div className="pt-2 border-t border-fd-border text-[9px] font-mono text-fd-muted-foreground/40">
             On-chain transactions: 2 (open + close) &bull; Off-chain checks:{" "}
             {transfer.lastCheckNonce}
           </div>
@@ -143,7 +143,7 @@ export function PhaseClose({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           onClick={() => dispatch({ type: "NEXT_STEP" })}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-xs font-mono text-white/70 transition-all"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-fd-muted hover:bg-fd-accent border border-fd-border text-xs font-mono text-fd-foreground/70 transition-all"
         >
           Confirm Settlement
           <ArrowRight className="size-3" />
@@ -154,7 +154,7 @@ export function PhaseClose({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           onClick={() => dispatch({ type: "NEXT_STEP" })}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-xs font-mono text-white/70 transition-all"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-fd-muted hover:bg-fd-accent border border-fd-border text-xs font-mono text-fd-foreground/70 transition-all"
         >
           Finalize Close
           <ArrowRight className="size-3" />

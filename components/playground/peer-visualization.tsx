@@ -39,20 +39,20 @@ function PeerNode({
         className={`size-11 rounded-full border flex items-center justify-center transition-all duration-700 ${
           active
             ? `${colors.border} ${colors.bg}`
-            : "border-white/10 bg-white/[0.02]"
+            : "border-fd-border bg-fd-muted"
         }`}
       >
         <motion.div
           animate={active ? { scale: [1, 1.3, 1] } : {}}
           transition={{ duration: 2, repeat: Infinity }}
           className={`size-2.5 rounded-full transition-colors duration-700 ${
-            active ? colors.dot : "bg-white/15"
+            active ? colors.dot : "bg-fd-muted-foreground/30"
           }`}
         />
       </motion.div>
-      <span className="text-[11px] font-mono text-white/50">{label}</span>
+      <span className="text-[11px] font-mono text-fd-muted-foreground">{label}</span>
       <span
-        className={`text-[9px] font-mono ${active ? colors.text : "text-white/15"} transition-colors duration-500`}
+        className={`text-[9px] font-mono ${active ? colors.text : "text-fd-muted-foreground/30"} transition-colors duration-500`}
       >
         {sublabel}
       </span>
@@ -82,7 +82,7 @@ export function PeerVisualization({
 
       <div className="flex-1 mx-3 relative" style={{ height: 56 }}>
         {/* Base line */}
-        <div className="absolute top-[27px] left-0 right-0 h-px bg-white/[0.06]" />
+        <div className="absolute top-[27px] left-0 right-0 h-px bg-fd-border" />
 
         {/* Active connection glow */}
         {active && (
@@ -93,7 +93,7 @@ export function PeerVisualization({
             className="absolute top-[27px] left-0 right-0 h-px origin-left"
             style={{
               background:
-                "linear-gradient(90deg, rgba(96,165,250,0.5), rgba(255,255,255,0.15), rgba(52,211,153,0.5))",
+                "linear-gradient(90deg, rgba(96,165,250,0.5), rgba(128,128,128,0.15), rgba(52,211,153,0.5))",
             }}
           />
         )}
@@ -174,7 +174,7 @@ export function PeerVisualization({
           <motion.span
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="absolute top-1 left-1/2 -translate-x-1/2 text-[9px] text-white/20 font-mono tracking-widest"
+            className="absolute top-1 left-1/2 -translate-x-1/2 text-[9px] text-fd-muted-foreground/40 font-mono tracking-widest"
           >
             BEP 10
           </motion.span>
@@ -201,7 +201,7 @@ export function PeerVisualization({
           <motion.span
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="absolute top-1 left-1/2 -translate-x-1/2 text-[9px] text-white/20 font-mono tracking-widest"
+            className="absolute top-1 left-1/2 -translate-x-1/2 text-[9px] text-fd-muted-foreground/40 font-mono tracking-widest"
           >
             CLOSE
           </motion.span>

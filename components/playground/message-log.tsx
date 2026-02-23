@@ -22,7 +22,7 @@ function directionIcon(dir: Message["direction"]) {
     case "blockchain":
       return <Blocks className="size-3 text-amber-400/70" />;
     case "system":
-      return <Monitor className="size-3 text-white/30" />;
+      return <Monitor className="size-3 text-fd-muted-foreground/50" />;
   }
 }
 
@@ -35,7 +35,7 @@ function directionColor(dir: Message["direction"]) {
     case "blockchain":
       return "border-amber-500/20";
     case "system":
-      return "border-white/[0.06]";
+      return "border-fd-border";
   }
 }
 
@@ -62,12 +62,12 @@ function CopyButton({ text }: { text: string }) {
         setCopied(true);
         setTimeout(() => setCopied(false), 1500);
       }}
-      className="p-1 rounded hover:bg-white/[0.06] transition-colors"
+      className="p-1 rounded hover:bg-fd-accent transition-colors"
     >
       {copied ? (
         <Check className="size-3 text-emerald-400" />
       ) : (
-        <Copy className="size-3 text-white/20 hover:text-white/40" />
+        <Copy className="size-3 text-fd-muted-foreground/40 hover:text-fd-muted-foreground/70" />
       )}
     </button>
   );
@@ -76,7 +76,7 @@ function CopyButton({ text }: { text: string }) {
 function JsonBlock({ data }: { data: Record<string, unknown> }) {
   const json = JSON.stringify(data, null, 2);
   return (
-    <pre className="text-[10px] font-mono text-white/35 leading-relaxed whitespace-pre-wrap break-all mt-2 p-2 rounded-lg bg-black/20 overflow-x-auto">
+    <pre className="text-[10px] font-mono text-fd-muted-foreground/60 leading-relaxed whitespace-pre-wrap break-all mt-2 p-2 rounded-lg bg-fd-background/80 overflow-x-auto">
       {json}
     </pre>
   );
@@ -90,12 +90,12 @@ function MessageBubble({ message }: { message: Message }) {
       initial={{ opacity: 0, y: 12, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ type: "spring", stiffness: 300, damping: 25 }}
-      className={`rounded-lg border p-3 ${directionColor(message.direction)} bg-white/[0.015]`}
+      className={`rounded-lg border p-3 ${directionColor(message.direction)} bg-fd-card`}
     >
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           {directionIcon(message.direction)}
-          <span className="text-[10px] font-mono text-white/25">
+          <span className="text-[10px] font-mono text-fd-muted-foreground/50">
             {directionLabel(message.direction)}
           </span>
         </div>
@@ -103,15 +103,15 @@ function MessageBubble({ message }: { message: Message }) {
           <CopyButton text={JSON.stringify(message.payload, null, 2)} />
           <button
             onClick={() => setExpanded(!expanded)}
-            className="p-1 rounded hover:bg-white/[0.06] transition-colors"
+            className="p-1 rounded hover:bg-fd-accent transition-colors"
           >
             <ChevronDown
-              className={`size-3 text-white/20 transition-transform ${expanded ? "rotate-180" : ""}`}
+              className={`size-3 text-fd-muted-foreground/40 transition-transform ${expanded ? "rotate-180" : ""}`}
             />
           </button>
         </div>
       </div>
-      <div className="text-xs font-medium text-white/60 mt-1.5">
+      <div className="text-xs font-medium text-fd-foreground/60 mt-1.5">
         {message.label}
       </div>
       <AnimatePresence>
@@ -142,8 +142,8 @@ export function MessageLog({ messages }: { messages: Message[] }) {
 
   if (messages.length === 0) {
     return (
-      <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] h-full flex items-center justify-center p-8">
-        <p className="text-xs font-mono text-white/15 text-center">
+      <div className="rounded-2xl border border-fd-border bg-fd-card h-full flex items-center justify-center p-8">
+        <p className="text-xs font-mono text-fd-muted-foreground/30 text-center">
           Protocol messages will appear here as you step through the flow.
         </p>
       </div>
@@ -151,19 +151,19 @@ export function MessageLog({ messages }: { messages: Message[] }) {
   }
 
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] overflow-hidden flex flex-col">
+    <div className="rounded-2xl border border-fd-border bg-fd-card overflow-hidden flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/[0.04]">
-        <span className="text-[10px] font-mono text-white/25 uppercase tracking-wider">
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-fd-border">
+        <span className="text-[10px] font-mono text-fd-muted-foreground/50 uppercase tracking-wider">
           Messages ({messages.length})
         </span>
         {/* Mobile toggle */}
         <button
           onClick={() => setMobileExpanded(!mobileExpanded)}
-          className="lg:hidden p-1 rounded hover:bg-white/[0.06]"
+          className="lg:hidden p-1 rounded hover:bg-fd-accent"
         >
           <ChevronDown
-            className={`size-3 text-white/25 transition-transform ${mobileExpanded ? "rotate-180" : ""}`}
+            className={`size-3 text-fd-muted-foreground/50 transition-transform ${mobileExpanded ? "rotate-180" : ""}`}
           />
         </button>
       </div>
