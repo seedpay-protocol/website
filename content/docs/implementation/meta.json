@@ -1,4 +1,4 @@
 {
   "title": "Implementation",
-  "pages": ["index", "cryptography", "blockchain-integration", "error-handling"]
+  "pages": ["index", "cryptography", "blockchain-integration", "error-handling", "solana-poc"]
 }

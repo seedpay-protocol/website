@@ -15,6 +15,8 @@ import {
   BookOpen,
   Code,
   Play,
+  GitBranch,
+  ExternalLink,
 } from "lucide-react";
 import { AnimateOnScroll } from "@/components/animate-on-scroll";
 import { HeroSection } from "@/components/hero-section";
@@ -337,6 +339,90 @@ function Economics() {
   );
 }
 
+function Implementation() {
+  const items = [
+    {
+      label: "Smart Contract",
+      detail: "Anchor 0.32 / Rust — 3 instructions (open, close, timeout)",
+    },
+    {
+      label: "TypeScript SDK",
+      detail: "ECDH key exchange, payment check signing, Solana client",
+    },
+    {
+      label: "Integration Tests",
+      detail: "Happy path, timeout recovery, replay protection — all passing",
+    },
+    {
+      label: "End-to-End Demo",
+      detail: "Full flow from ECDH handshake to channel settlement",
+    },
+  ];
+
+  return (
+    <section className="relative px-4 py-16 max-w-4xl mx-auto">
+      <AnimateOnScroll>
+        <h2 className="text-2xl font-bold text-center mb-2">
+          Solana Implementation
+        </h2>
+        <p className="text-fd-muted-foreground text-center mb-12 max-w-xl mx-auto">
+          A working proof-of-concept on Solana with payment channels, ECDH
+          privacy, and off-chain micropayments.
+        </p>
+      </AnimateOnScroll>
+      <AnimateOnScroll delay={80}>
+        <div className="rounded-xl border border-fd-primary/20 bg-fd-primary/3 overflow-hidden">
+          <div className="border-b border-fd-primary/15 bg-fd-primary/5 px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-3">
+              <div className="inline-flex items-center justify-center size-9 rounded-lg bg-fd-primary/15 text-fd-primary">
+                <GitBranch className="size-4" />
+              </div>
+              <div>
+                <div className="font-semibold text-sm">seedpay-solana</div>
+                <div className="text-xs text-fd-muted-foreground">
+                  Anchor + SPL Token + Ed25519 verification
+                </div>
+              </div>
+            </div>
+            <a
+              href="https://github.com/seedpay-protocol/seedpay-solana"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-fd-border px-4 py-2 text-xs font-medium text-fd-foreground hover:bg-fd-accent transition-colors"
+            >
+              View on GitHub
+              <ExternalLink className="size-3" />
+            </a>
+          </div>
+          <div className="grid gap-0 sm:grid-cols-2">
+            {items.map((item, i) => (
+              <div
+                key={item.label}
+                className={`px-6 py-4 ${i < 2 ? "border-b border-fd-primary/10" : ""} ${i % 2 === 0 ? "sm:border-r sm:border-fd-primary/10" : ""}`}
+              >
+                <div className="text-sm font-medium mb-1">{item.label}</div>
+                <div className="text-xs text-fd-muted-foreground">
+                  {item.detail}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </AnimateOnScroll>
+      <AnimateOnScroll delay={120}>
+        <div className="mt-4 text-center">
+          <Link
+            href="/docs/implementation/solana-poc"
+            className="text-sm text-fd-primary hover:underline"
+          >
+            Read the full implementation docs →
+          </Link>
+        </div>
+      </AnimateOnScroll>
+    </section>
+  );
+}
+
 function CTA() {
   return (
     <AnimateOnScroll>
@@ -384,6 +470,7 @@ export default function HomePage() {
       <ProtocolFlow />
       <Comparison />
       <Economics />
+      <Implementation />
       <CTA />
     </div>
   );

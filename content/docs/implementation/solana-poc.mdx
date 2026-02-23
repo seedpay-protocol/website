@@ -1,0 +1,161 @@
+---
+title: Solana Proof of Concept
+description: Working implementation of SeedPay payment channels on Solana using Anchor, with TypeScript SDK and end-to-end demo.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+<Callout type="warn">
+  This is a **proof-of-concept** implementation. It is not audited and should not be used in production.
+</Callout>
+
+The [seedpay-solana](https://github.com/seedpay-protocol/seedpay-solana) repository contains a working Solana implementation of the SeedPay payment channel protocol, built with **Anchor 0.32** and a companion **TypeScript SDK**.
+
+## Repository Structure
+
+```
+seedpay-solana/
+├── programs/seedpay/    # Anchor smart contract (Rust, ~614 lines)
+├── packages/sdk/        # TypeScript SDK (ECDH, payment checks, client)
+├── packages/demo/       # End-to-end demo application
+├── tests/               # Integration tests (anchor-bankrun)
+└── docs/                # Architecture docs and deviation log
+```
+
+## Smart Contract
+
+The on-chain program implements three instructions that manage the full lifecycle of a payment channel:
+
+### open_channel
+
+Creates a new payment channel with USDC escrow.
+
+- Leecher deposits tokens into a PDA-controlled escrow account
+- Channel state is stored in a PDA derived from `[b"channel", leecher, seeder, channel_id]`
+- Validates deposit amount > 0 and timeout between 1 hour and 7 days
+
+### close_channel
+
+Cooperative close — Seeder claims earned funds.
+
+- Verifies the Leecher's Ed25519 signature over `channel_id || amount || nonce` using Solana's native Ed25519 program
+- Transfers claimed amount to Seeder, refunds remainder to Leecher
+- Enforces monotonically increasing nonces for replay protection
+
+### timeout_close
+
+Force-close — Leecher recovers funds after timeout.
+
+- Requires `current_time > channel.timeout`
+- Refunds entire deposit to Leecher
+- Only callable by the original depositor
+
+### Channel State
+
+```rust
+pub struct ChannelState {
+    pub leecher: Pubkey,
+    pub seeder: Pubkey,
+    pub deposited: u64,
+    pub channel_id: [u8; 32],
+    pub created_at: i64,
+    pub timeout: i64,
+    pub last_nonce: u64,
+    pub status: ChannelStatus,  // Open | Closed | TimedOut
+    pub bump: u8,
+}
+```
+
+## TypeScript SDK
+
+The SDK provides two modules for client-side cryptography:
+
+### ECDH Module
+
+Handles ephemeral session key exchange between peers:
+
+- X25519 key pair generation
+- Shared secret computation
+- Session UUID derivation via HKDF-SHA256 with context `"seedpay-v1-session"`
+- Channel ID derivation: `SHA-256(Session_UUID)`
+
+### Payment Check Module
+
+Handles off-chain micropayment authorization:
+
+- Constructs payment check messages: `channel_id (32B) || amount (8B LE) || nonce (8B LE)`
+- Signs with Ed25519 (tweetnacl)
+- Verifies signatures locally before submission
+
+## Architectural Deviations from Spec
+
+During PoC development, three design decisions diverged from the v0.3 protocol specification:
+
+### 1. Escrow Address — Derived Instead of Stored
+
+The spec originally stored the escrow address in channel state. The PoC derives it from PDA seeds instead.
+
+- Saves 32 bytes of rent per channel
+- Anchor validates the derived address automatically via account constraints
+- No information lost — the escrow PDA is deterministic from the channel state address
+
+### 2. PDA Seeds — channel_id Replaces Nonce
+
+Original seeds: `["seedpay", "channel", leecher, seeder, nonce(u64)]`
+
+PoC seeds: `[b"channel", leecher, seeder, channel_id([u8; 32])]`
+
+- Dropped `"seedpay"` prefix — the program ID already namespaces
+- Replaced 64-bit nonce with 256-bit `channel_id` — no global counter needed
+- Collision probability is negligible with 256 bits of entropy
+
+### 3. channel_id = Session Hash (Memo Program Dropped)
+
+This is the most significant change. The spec used two separate concepts:
+- `channel_id` derived from `SHA-256(leecher || seeder || timestamp || nonce)` — no connection to ECDH
+- Session binding via `session_hash = SHA-256(Session_UUID)` in a Memo instruction
+
+The PoC unifies them: **`channel_id = SHA-256(Session_UUID)`** — the channel identifier IS the session binding.
+
+- Removes dependency on Solana's Memo program entirely
+- Simpler program and client logic
+- **Chain-agnostic**: memo is Solana-specific; embedding session binding in account derivation works on any chain (Ethereum CREATE2, Sui object IDs, etc.)
+- Same security: SHA-256 preimage resistance still prevents linking session_hash to download activity
+- Same verification: Seeder computes `SHA-256(Session_UUID)` locally and uses it to derive the PDA — if it matches, the session is bound
+
+<Callout>
+  These deviations are candidates for adoption into the main protocol specification. See [CONTRIBUTING.md](https://github.com/seedpay-protocol/seedpay/blob/main/CONTRIBUTING.md) to provide feedback.
+</Callout>
+
+## Tests
+
+Integration tests use `anchor-bankrun` for local execution without requiring a Solana validator:
+
+- **Happy path**: ECDH key exchange → open channel → 3 progressive payment checks → close with highest nonce → verify balances
+- **Timeout path**: Open channel → warp time past timeout → timeout close → verify full refund
+- **Payment check crypto**: Signing, verification, and replay protection
+- **Balance conservation**: Verify total tokens are conserved across open/close operations
+
+## Running Locally
+
+```bash
+git clone https://github.com/seedpay-protocol/seedpay-solana.git
+cd seedpay-solana
+pnpm install
+anchor build
+anchor test
+```
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Smart Contract | Rust + Anchor 0.32 |
+| Token Standard | SPL Token (USDC) |
+| Signature Verification | Solana Ed25519 native program |
+| SDK | TypeScript |
+| ECDH | @noble/curves (X25519) |
+| Key Derivation | @noble/hashes (HKDF-SHA256) |
+| Payment Signatures | tweetnacl (Ed25519) |
+| Testing | anchor-bankrun |
