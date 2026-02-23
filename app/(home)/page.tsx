@@ -14,6 +14,7 @@ import {
   X,
   BookOpen,
   Code,
+  Play,
 } from "lucide-react";
 import { AnimateOnScroll } from "@/components/animate-on-scroll";
 import { HeroSection } from "@/components/hero-section";
@@ -340,10 +341,17 @@ function CTA() {
             SeedPay is an open RFC. Explore the full specification, security
             model, and implementation guide.
           </p>
-          <div className="flex gap-4 justify-center">
+          <div className="flex flex-wrap gap-4 justify-center">
+            <Link
+              href="/playground"
+              className="inline-flex items-center gap-2 rounded-lg bg-fd-primary px-6 py-3 text-sm font-medium text-fd-primary-foreground hover:bg-fd-primary/90 transition-colors"
+            >
+              <Play className="size-4" />
+              Try the Playground
+            </Link>
             <Link
               href="/docs"
-              className="inline-flex items-center gap-2 rounded-lg bg-fd-primary px-6 py-3 text-sm font-medium text-fd-primary-foreground hover:bg-fd-primary/90 transition-colors"
+              className="inline-flex items-center gap-2 rounded-lg border border-fd-border px-6 py-3 text-sm font-medium text-fd-foreground hover:bg-fd-accent transition-colors"
             >
               <BookOpen className="size-4" />
               Documentation
