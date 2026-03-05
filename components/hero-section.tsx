@@ -46,9 +46,8 @@ export function HeroSection() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl text-white"
             >
-              Payments Protocol for{" "}
-              <span className="text-green-400">BitTorrent</span>{" "}
-              Networks
+              Payment Channels for{" "}
+              <span className="text-green-400">Streaming Delivery</span>
             </motion.h1>
 
             <motion.p
@@ -57,9 +56,11 @@ export function HeroSection() {
               transition={{ duration: 0.6, delay: 0.35 }}
               className="mt-6 text-lg text-white/50 max-w-lg leading-relaxed"
             >
-              Seeders earn crypto for sharing files. Leechers pay for faster
-              downloads. Streaming micropayments via payment channels with
-              on-chain privacy.
+              Pay as data arrives — chunk by chunk — with cryptographic fair
+              exchange. First proof:{" "}
+              <span className="text-white/70">
+                pay-per-megabyte file sharing on Solana.
+              </span>
             </motion.p>
 
             <motion.div

@@ -17,6 +17,15 @@ import {
   Play,
   GitBranch,
   ExternalLink,
+  Cpu,
+  Network,
+  FileDown,
+  Hash,
+  Users,
+  Zap,
+  Server,
+  Brain,
+  HardDrive,
 } from "lucide-react";
 import { AnimateOnScroll } from "@/components/animate-on-scroll";
 import { HeroSection } from "@/components/hero-section";
@@ -83,6 +92,119 @@ function Features() {
               <h3 className="font-semibold mb-2">{f.title}</h3>
               <p className="text-sm text-fd-muted-foreground">
                 {f.description}
+              </p>
+            </div>
+          </AnimateOnScroll>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+const useCases = [
+  {
+    icon: FileDown,
+    title: "P2P File Sharing",
+    description: "Pay seeders per MB. Piece hash = delivery proof.",
+    accent: "Proving this today",
+  },
+  {
+    icon: Brain,
+    title: "Decentralized AI Inference",
+    description:
+      "Pay GPU nodes per token batch. Output hash = delivery proof. Node drops at minute 3 — recover funds.",
+    accent: "Next frontier",
+  },
+  {
+    icon: Server,
+    title: "Decentralized CDN",
+    description:
+      "Pay edge nodes per chunk. Merkle proof = delivery proof. 2 on-chain txns vs ~2,000 with atomic payments.",
+    accent: "Future application",
+  },
+];
+
+function Generalizes() {
+  return (
+    <section className="relative px-4 py-16 max-w-6xl mx-auto">
+      <AnimateOnScroll>
+        <h2 className="text-2xl font-bold text-center mb-2">
+          This Primitive <span className="text-fd-primary">Generalizes</span>
+        </h2>
+        <p className="text-fd-muted-foreground text-center mb-4 max-w-2xl mx-auto">
+          x402 assumes delivery is instant and atomic. SeedPay assumes delivery
+          takes time and can fail partway.
+        </p>
+        <p className="text-fd-muted-foreground/60 text-center mb-12 max-w-xl mx-auto text-sm">
+          Any streaming delivery problem where you need cryptographic fair
+          exchange.
+        </p>
+      </AnimateOnScroll>
+      <div className="grid gap-6 sm:grid-cols-3">
+        {useCases.map((uc, i) => (
+          <AnimateOnScroll key={uc.title} delay={i * 100}>
+            <div className="group relative rounded-xl border border-fd-primary/20 bg-fd-primary/3 p-6 h-full hover:border-fd-primary/50 transition-all hover:shadow-[0_0_24px_-6px] hover:shadow-fd-primary/20 overflow-hidden">
+              <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-fd-primary/40 to-transparent" />
+              <div className="inline-flex items-center justify-center size-10 rounded-lg bg-fd-primary/15 text-fd-primary mb-4 group-hover:bg-fd-primary/25 transition-colors">
+                <uc.icon className="size-5" />
+              </div>
+              <h3 className="font-semibold mb-2">{uc.title}</h3>
+              <p className="text-sm text-fd-muted-foreground mb-3">
+                {uc.description}
+              </p>
+              <span className="inline-block text-xs font-medium text-fd-primary/70 bg-fd-primary/10 rounded-full px-2.5 py-0.5">
+                {uc.accent}
+              </span>
+            </div>
+          </AnimateOnScroll>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function WhyBitTorrent() {
+  const reasons = [
+    {
+      icon: Hash,
+      title: "Delivery verification is built in",
+      description:
+        "Every piece has a SHA-1 hash (BEP 3). No new proof system needed — the protocol already verifies data integrity.",
+    },
+    {
+      icon: Users,
+      title: "Initial users are crypto-native",
+      description:
+        "Blockchain node operators need 70GB+ Solana snapshots. Currently shared via Discord links. Zero wallet friction.",
+    },
+    {
+      icon: Zap,
+      title: "Real pain point, real market",
+      description:
+        "38% of torrents die within the first month. Economic incentive to seed means content stays alive.",
+    },
+  ];
+
+  return (
+    <section className="relative px-4 py-16 max-w-5xl mx-auto">
+      <AnimateOnScroll>
+        <h2 className="text-2xl font-bold text-center mb-2">
+          Why BitTorrent <span className="text-fd-primary">First</span>
+        </h2>
+        <p className="text-fd-muted-foreground text-center mb-12 max-w-xl mx-auto">
+          The ideal proving ground for streaming payment channels.
+        </p>
+      </AnimateOnScroll>
+      <div className="grid gap-6 sm:grid-cols-3">
+        {reasons.map((r, i) => (
+          <AnimateOnScroll key={r.title} delay={i * 100}>
+            <div className="relative rounded-xl border border-fd-border/60 bg-fd-card p-6 h-full hover:border-fd-primary/30 transition-all">
+              <div className="inline-flex items-center justify-center size-10 rounded-lg bg-fd-primary/10 text-fd-primary mb-4">
+                <r.icon className="size-5" />
+              </div>
+              <h3 className="font-semibold mb-2">{r.title}</h3>
+              <p className="text-sm text-fd-muted-foreground">
+                {r.description}
               </p>
             </div>
           </AnimateOnScroll>
@@ -217,11 +339,19 @@ function Comparison() {
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,hsl(142_71%_45%/0.07)_0%,transparent_60%)]" />
       <AnimateOnScroll>
         <h2 className="text-2xl font-bold text-center mb-2">
-          Compared to Alternatives
+          Learning from <span className="text-fd-primary">Past Attempts</span>
         </h2>
-        <p className="text-fd-muted-foreground text-center mb-12 max-w-xl mx-auto">
-          How SeedPay stacks up against existing solutions.
+        <p className="text-fd-muted-foreground text-center mb-4 max-w-xl mx-auto">
+          Others have tackled this problem. SeedPay builds on their lessons by
+          extending the existing protocol instead of replacing it.
         </p>
+        <div className="flex flex-wrap justify-center gap-3 mb-12 text-xs text-fd-muted-foreground/60">
+          <span>BTT — centralized infrastructure</span>
+          <span className="text-fd-border">|</span>
+          <span>Upfire — required specialized client</span>
+          <span className="text-fd-border">|</span>
+          <span>Tribler — remained research-grade</span>
+        </div>
       </AnimateOnScroll>
       <AnimateOnScroll delay={100}>
         <div className="overflow-x-auto rounded-xl border border-fd-primary/20 overflow-hidden">
@@ -423,6 +553,81 @@ function Implementation() {
   );
 }
 
+const markets = [
+  {
+    icon: HardDrive,
+    segment: "Blockchain Node Operators",
+    size: "50-100GB+",
+    why: "Fast sync, Discord links today",
+    ready: true,
+  },
+  {
+    icon: Brain,
+    segment: "AI/ML Engineers",
+    size: "10-100GB+",
+    why: "Time = money, HuggingFace is slow",
+    ready: false,
+  },
+  {
+    icon: Network,
+    segment: "Crypto-Native Creators & DAOs",
+    size: "Variable",
+    why: "Censorship resistance",
+    ready: true,
+  },
+  {
+    icon: Cpu,
+    segment: "Open Source Distributors",
+    size: "1-10GB",
+    why: "Launch day bandwidth spikes",
+    ready: false,
+  },
+];
+
+function TargetMarkets() {
+  return (
+    <section className="relative px-4 py-16 max-w-5xl mx-auto">
+      <AnimateOnScroll>
+        <h2 className="text-2xl font-bold text-center mb-2">
+          Who Pays for <span className="text-fd-primary">Faster Downloads</span>?
+        </h2>
+        <p className="text-fd-muted-foreground text-center mb-12 max-w-xl mx-auto">
+          Beachhead: blockchain node operators. Crypto-native by definition,
+          zero wallet friction.
+        </p>
+      </AnimateOnScroll>
+      <div className="grid gap-4 sm:grid-cols-2">
+        {markets.map((m, i) => (
+          <AnimateOnScroll key={m.segment} delay={i * 80}>
+            <div className="relative rounded-xl border border-fd-border/60 bg-fd-card p-5 h-full hover:border-fd-primary/30 transition-all flex gap-4 items-start">
+              <div className="inline-flex items-center justify-center size-10 shrink-0 rounded-lg bg-fd-primary/10 text-fd-primary">
+                <m.icon className="size-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="font-semibold text-sm">{m.segment}</h3>
+                  {m.ready ? (
+                    <span className="text-[10px] font-medium text-fd-primary bg-fd-primary/10 rounded-full px-2 py-0.5">
+                      Crypto-native
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-medium text-fd-muted-foreground bg-fd-muted/50 rounded-full px-2 py-0.5">
+                      Growing
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-fd-muted-foreground">
+                  {m.size} files — {m.why}
+                </p>
+              </div>
+            </div>
+          </AnimateOnScroll>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function CTA() {
   return (
     <AnimateOnScroll>
@@ -467,9 +672,12 @@ export default function HomePage() {
     <div className="flex flex-col">
       <HeroSection />
       <Features />
+      <Generalizes />
+      <WhyBitTorrent />
       <ProtocolFlow />
       <Comparison />
       <Economics />
+      <TargetMarkets />
       <Implementation />
       <CTA />
     </div>

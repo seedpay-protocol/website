@@ -1,6 +1,6 @@
 ---
 title: SeedPay Documentation
-description: Protocol specification for SeedPay — payments for BitTorrent networks.
+description: Payment channel protocol for streaming delivery — first proof on BitTorrent with Solana.
 ---
 
 import { Cards, Card } from 'fumadocs-ui/components/card';
@@ -10,7 +10,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
   This specification is **v0.3 draft** — research software, not for production use.
 </Callout>
 
-SeedPay is an open payment protocol that enables BitTorrent seeders to earn cryptocurrency (USDC) for sharing files. Leechers pay seeders directly via unidirectional payment channels with streaming micropayments.
+SeedPay is a payment channel protocol for **streaming delivery** — when you're paying as data arrives, chunk by chunk, and you need cryptographic proof it was actually delivered. The first application is BitTorrent: seeders earn USDC for sharing files, leechers pay fractions of a cent per megabyte. But the primitive is general — it applies to any scenario where delivery takes time and can fail partway (decentralized AI inference, CDN, etc).
 
 ## Quick Links
 
@@ -19,7 +19,7 @@ SeedPay is an open payment protocol that enables BitTorrent seeders to earn cryp
   <Card title="Design Principles" href="/docs/getting-started/design-principles" />
   <Card title="Protocol Flow" href="/docs/core-protocol" />
   <Card title="Security Model" href="/docs/security" />
-  <Card title="Implementation Guide" href="/docs/implementation" />
+  <Card title="Solana PoC" href="/docs/implementation/solana-poc" />
   <Card title="Message Reference" href="/docs/reference/message-types" />
 </Cards>
 
@@ -28,16 +28,19 @@ SeedPay is an open payment protocol that enables BitTorrent seeders to earn cryp
 | Property | Value |
 |----------|-------|
 | **Version** | v0.3 (Pre-Alpha) |
-| **Payment** | USDC via unidirectional payment channels |
-| **Pricing** | $0.0001–$0.001 per MB |
-| **Privacy** | ECDH ephemeral session keys (no peer_id on-chain) |
+| **Primitive** | Unidirectional payment channels with fair exchange |
+| **First Application** | Pay-per-megabyte BitTorrent file sharing |
+| **Payment** | USDC via streaming off-chain checks |
+| **Pricing** | $0.0001-$0.001 per MB |
+| **Privacy** | ECDH ephemeral session keys (unlinkable sessions) |
 | **Chain** | Solana (initial), extensible to EVM chains |
-| **Compatibility** | Backward compatible with standard BitTorrent |
-| **On-chain cost** | 2 transactions per session (open + close) |
+| **On-chain cost** | 2 transactions per session (~$0.003 total) |
+| **Trust model** | Neither party can cheat — cryptographic fair exchange |
 
 ## How It Works
 
 1. **Handshake** — Peers advertise SeedPay support via BEP 10 extended handshake
-2. **Channel Setup** — ECDH key exchange, then Leecher opens a payment channel on-chain
-3. **Verification** — Seeder verifies the channel on-chain before serving data
-4. **Data Transfer** — Standard BitTorrent piece exchange with streaming payment checks
+2. **Channel Setup** — ECDH key exchange derives ephemeral Session UUID, Leecher deposits USDC into on-chain escrow
+3. **Verification** — Seeder independently verifies the payment channel on-chain before serving data
+4. **Data Transfer** — Standard BitTorrent piece exchange with streaming signed payment checks
+5. **Settlement** — Seeder submits the highest check to collect; remainder refunded to Leecher
