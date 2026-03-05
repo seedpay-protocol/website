@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { RotateCcw, ArrowRight } from "lucide-react";
 import { usePlaygroundState } from "./use-playground-state";
@@ -17,6 +18,47 @@ import { explanations } from "./playground-data";
 
 export function PlaygroundClient() {
   const [state, dispatch] = usePlaygroundState();
+
+  // Keyboard shortcuts: → / Space = advance, ← / Backspace = reset
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      )
+        return;
+
+      if (e.key === "ArrowRight" || e.key === " ") {
+        e.preventDefault();
+        const { phase, subStep } = state;
+
+        if (phase === "data-transfer") {
+          if (subStep === "dt:check-required" || subStep === "dt:choked") {
+            dispatch({ type: "SEND_PAYMENT_CHECK" });
+          } else {
+            dispatch({ type: "CLOSE_CHANNEL" });
+          }
+        } else if (phase === "closed") {
+          dispatch({ type: "RESET" });
+        } else {
+          dispatch({ type: "NEXT_STEP" });
+        }
+      }
+
+      if (e.key === "ArrowLeft" || e.key === "Backspace") {
+        if (state.phase !== "idle") {
+          e.preventDefault();
+          dispatch({ type: "RESET" });
+        }
+      }
+    },
+    [state, dispatch],
+  );
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown]);
 
   const showEscrow =
     state.channel.status !== "none" &&
