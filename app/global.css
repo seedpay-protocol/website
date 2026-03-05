@@ -56,3 +56,29 @@ a[data-active="true"] {
   background-color: hsl(142 71% 45% / 0.05) !important;
 }
 
+/* Docs brand color accents */
+
+/* Docs inline code brand tint */
+.prose :not(pre) > code {
+  background: hsl(142 71% 45% / 0.08) !important;
+  border-color: hsl(142 71% 45% / 0.15) !important;
+}
+
+/* Docs blockquote left border brand color */
+.prose blockquote {
+  border-left-color: hsl(142 71% 45% / 0.4) !important;
+}
+
+/* Docs table header brand accent */
+.prose th {
+  border-bottom-color: hsl(142 71% 45% / 0.2) !important;
+}
+
+/* Docs link brand color */
+.prose a:not([class]) {
+  color: hsl(142 71% 45%);
+}
+.prose a:not([class]):hover {
+  color: hsl(142 71% 55%);
+}
+

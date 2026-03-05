@@ -1,4 +1,5 @@
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
+import Image from "next/image";
 
 export const gitConfig = {
   user: "seedpay-protocol",
@@ -9,7 +10,18 @@ export const gitConfig = {
 export function baseOptions(): BaseLayoutProps {
   return {
     nav: {
-      title: "SeedPay",
+      title: (
+        <>
+          <Image
+            src="/seedpay-logo.png"
+            alt="SeedPay"
+            width={24}
+            height={24}
+            className="dark:invert-0"
+          />
+          <span className="font-semibold">SeedPay</span>
+        </>
+      ),
     },
     links: [
       {
