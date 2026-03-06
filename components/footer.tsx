@@ -33,6 +33,11 @@ const sections = [
         href: "https://github.com/seedpay-protocol/seedpay-solana",
         external: true,
       },
+      {
+        label: "Program on Devnet",
+        href: "https://explorer.solana.com/address/7DwPMoGzTjRUroE47VPEEJn4FBSypAA5dbeMn3ocVdsS?cluster=devnet",
+        external: true,
+      },
     ],
   },
 ];

@@ -524,6 +524,25 @@ function Implementation() {
               <ExternalLink className="size-3" />
             </a>
           </div>
+          {/* Program ID */}
+          <div className="border-b border-fd-primary/15 px-6 py-3 flex items-center gap-2 flex-wrap">
+            <span className="text-[10px] font-mono text-fd-muted-foreground/50 uppercase tracking-wider">
+              Program ID
+            </span>
+            <a
+              href="https://explorer.solana.com/address/7DwPMoGzTjRUroE47VPEEJn4FBSypAA5dbeMn3ocVdsS?cluster=devnet"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 font-mono text-xs text-fd-primary/80 hover:text-fd-primary transition-colors"
+            >
+              7DwPMoGzTjRUroE47VPEEJn4FBSypAA5dbeMn3ocVdsS
+              <ExternalLink className="size-3 shrink-0" />
+            </a>
+            <span className="text-[9px] font-mono text-fd-muted-foreground/40 bg-fd-muted rounded px-1.5 py-0.5">
+              devnet
+            </span>
+          </div>
+
           <div className="grid gap-0 sm:grid-cols-2">
             {items.map((item, i) => (
               <div
