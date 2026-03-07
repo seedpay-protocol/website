@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   Coins,
@@ -29,6 +30,16 @@ import {
 } from "lucide-react";
 import { AnimateOnScroll } from "@/components/animate-on-scroll";
 import { HeroSection } from "@/components/hero-section";
+import { siteConfig } from "@/lib/site";
+import { SoftwareApplicationJsonLd } from "@/components/json-ld";
+
+export const metadata: Metadata = {
+  title: `${siteConfig.name} — Payment Channels for Streaming Delivery`,
+  description: siteConfig.description,
+  alternates: {
+    canonical: siteConfig.url,
+  },
+};
 
 const features = [
   {
@@ -689,6 +700,7 @@ function CTA() {
 export default function HomePage() {
   return (
     <div className="flex flex-col">
+      <SoftwareApplicationJsonLd />
       <HeroSection />
       <Features />
       <Generalizes />

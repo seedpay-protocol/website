@@ -1,9 +1,9 @@
 // @ts-nocheck
-import { default as __fd_glob_25 } from "../content/docs/security/meta.json?collection=docs"
-import { default as __fd_glob_24 } from "../content/docs/reference/meta.json?collection=docs"
-import { default as __fd_glob_23 } from "../content/docs/implementation/meta.json?collection=docs"
-import { default as __fd_glob_22 } from "../content/docs/getting-started/meta.json?collection=docs"
-import { default as __fd_glob_21 } from "../content/docs/core-protocol/meta.json?collection=docs"
+import { default as __fd_glob_25 } from "../content/docs/core-protocol/meta.json?collection=docs"
+import { default as __fd_glob_24 } from "../content/docs/implementation/meta.json?collection=docs"
+import { default as __fd_glob_23 } from "../content/docs/security/meta.json?collection=docs"
+import { default as __fd_glob_22 } from "../content/docs/reference/meta.json?collection=docs"
+import { default as __fd_glob_21 } from "../content/docs/getting-started/meta.json?collection=docs"
 import { default as __fd_glob_20 } from "../content/docs/meta.json?collection=docs"
 import * as __fd_glob_19 from "../content/docs/security/privacy.mdx?collection=docs"
 import * as __fd_glob_18 from "../content/docs/security/payment-verification.mdx?collection=docs"
@@ -33,4 +33,4 @@ const create = server<typeof Config, import("fumadocs-mdx/runtime/types").Intern
   }
 }>({"doc":{"passthroughs":["extractedReferences"]}});
 
-export const docs = await create.docs("docs", "content/docs", {"meta.json": __fd_glob_20, "core-protocol/meta.json": __fd_glob_21, "getting-started/meta.json": __fd_glob_22, "implementation/meta.json": __fd_glob_23, "reference/meta.json": __fd_glob_24, "security/meta.json": __fd_glob_25, }, {"index.mdx": __fd_glob_0, "core-protocol/data-transfer.mdx": __fd_glob_1, "core-protocol/handshake.mdx": __fd_glob_2, "core-protocol/index.mdx": __fd_glob_3, "core-protocol/payment-channels.mdx": __fd_glob_4, "core-protocol/verification.mdx": __fd_glob_5, "getting-started/design-principles.mdx": __fd_glob_6, "getting-started/index.mdx": __fd_glob_7, "implementation/blockchain-integration.mdx": __fd_glob_8, "implementation/cryptography.mdx": __fd_glob_9, "implementation/error-handling.mdx": __fd_glob_10, "implementation/index.mdx": __fd_glob_11, "implementation/solana-poc.mdx": __fd_glob_12, "reference/future-extensions.mdx": __fd_glob_13, "reference/message-types.mdx": __fd_glob_14, "reference/references.mdx": __fd_glob_15, "security/economic-attacks.mdx": __fd_glob_16, "security/index.mdx": __fd_glob_17, "security/payment-verification.mdx": __fd_glob_18, "security/privacy.mdx": __fd_glob_19, });
+export const docs = await create.docs("docs", "content/docs", {"meta.json": __fd_glob_20, "getting-started/meta.json": __fd_glob_21, "reference/meta.json": __fd_glob_22, "security/meta.json": __fd_glob_23, "implementation/meta.json": __fd_glob_24, "core-protocol/meta.json": __fd_glob_25, }, {"index.mdx": __fd_glob_0, "core-protocol/data-transfer.mdx": __fd_glob_1, "core-protocol/handshake.mdx": __fd_glob_2, "core-protocol/index.mdx": __fd_glob_3, "core-protocol/payment-channels.mdx": __fd_glob_4, "core-protocol/verification.mdx": __fd_glob_5, "getting-started/design-principles.mdx": __fd_glob_6, "getting-started/index.mdx": __fd_glob_7, "implementation/blockchain-integration.mdx": __fd_glob_8, "implementation/cryptography.mdx": __fd_glob_9, "implementation/error-handling.mdx": __fd_glob_10, "implementation/index.mdx": __fd_glob_11, "implementation/solana-poc.mdx": __fd_glob_12, "reference/future-extensions.mdx": __fd_glob_13, "reference/message-types.mdx": __fd_glob_14, "reference/references.mdx": __fd_glob_15, "security/economic-attacks.mdx": __fd_glob_16, "security/index.mdx": __fd_glob_17, "security/payment-verification.mdx": __fd_glob_18, "security/privacy.mdx": __fd_glob_19, });

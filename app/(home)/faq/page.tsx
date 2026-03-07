@@ -2,14 +2,35 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { AnimateOnScroll } from "@/components/animate-on-scroll";
 import { BookOpen } from "lucide-react";
+import { FAQPageJsonLd } from "@/components/json-ld";
 
 export const metadata: Metadata = {
-  title: "FAQ – SeedPay",
+  title: "FAQ",
   description:
     "Frequently asked questions about SeedPay — the payments protocol for BitTorrent networks.",
+  alternates: {
+    canonical: "/faq",
+  },
 };
 
 type FAQItem = { q: string; a: React.ReactNode };
+
+const faqJsonLdData: { q: string; a: string }[] = [
+  { q: "What is SeedPay?", a: "SeedPay is an open payment protocol that lets BitTorrent seeders earn cryptocurrency (USDC) for sharing files, while leechers pay seeders directly for faster downloads and guaranteed availability. It extends the BitTorrent Wire Protocol with payment handshakes and blockchain-verified payment channels." },
+  { q: "What problem does it solve?", a: "The free-rider problem. BitTorrent depends on users seeding after downloading, but rational actors have no incentive to do so. Popular torrents survive on altruism; long-tail content dies once initial interest fades. SeedPay provides direct economic incentives for seeding — seeders earn real money for the bandwidth they provide." },
+  { q: "What is the current status?", a: "SeedPay is at v0.3 Pre-Alpha / RFC stage. This is research software and should not be used in production." },
+  { q: "Who is SeedPay for?", a: "The primary target is crypto-native users who value speed, availability, and supporting content creators. Non-crypto users can continue using standard BitTorrent without any changes — SeedPay payments are entirely opt-in." },
+  { q: "How do payments work?", a: "SeedPay uses unidirectional payment channels. The leecher deposits USDC into an on-chain escrow, then signs off-chain payment checks as data is downloaded. The seeder submits the final check to claim funds when the session ends. Only 2 on-chain transactions are needed per session (open + close)." },
+  { q: "How much does it cost to download?", a: "Seeders set their own prices, but typical pricing is $0.0001–$0.001 per MB. That means a 1 GB file costs roughly $0.10–$1.00." },
+  { q: "Do I need to buy crypto to use it?", a: "Not necessarily. You can seed popular content first to earn USDC from leechers, then spend those earnings on your own downloads." },
+  { q: "What happens if the connection drops mid-download?", a: "If the connection drops, the seeder can close the channel with the highest payment check they received. If the seeder disappears, the leecher can force-close the channel after a timeout period (default 24 hours) to recover unspent funds." },
+  { q: "Can I still use BitTorrent for free?", a: "Yes. SeedPay is fully opt-in and backward compatible. Non-SeedPay clients continue to work without modification." },
+  { q: "How does SeedPay protect my privacy?", a: "V0.3 uses Ephemeral Session Keys based on Elliptic Curve Diffie-Hellman (ECDH). Each session derives a unique Session UUID, and only a SHA-256 hash of it appears on-chain. Blockchain observers cannot link wallet addresses to download activity." },
+  { q: "Can payment checks be forged or replayed?", a: "No. Each payment check is cryptographically signed with Ed25519 and includes a monotonically increasing nonce. Checks are bound to a specific channel ID, so they cannot be replayed across sessions." },
+  { q: "Which blockchains are supported?", a: "V0.3 targets Solana first (using SPL Token for USDC). The protocol is blockchain-agnostic by design. Ethereum/EVM support is planned for future versions." },
+  { q: "Why USDC instead of a custom token?", a: "USDC is a widely adopted stablecoin with real, stable value. A proprietary token would introduce volatility risk, require liquidity bootstrapping, and add friction." },
+  { q: "How is SeedPay different from BitTorrent Token (BTT)?", a: "BTT uses a centralized ledger with a proprietary token. SeedPay is fully decentralized, uses an established stablecoin (USDC), is backward compatible with standard BitTorrent, and is built on open standards." },
+];
 
 const general: FAQItem[] = [
   {
@@ -197,6 +218,7 @@ function FAQCategory({
 export default function FAQPage() {
   return (
     <div className="flex flex-col">
+      <FAQPageJsonLd questions={faqJsonLdData} />
       <section className="relative px-4 pt-20 pb-8 max-w-3xl mx-auto w-full text-center">
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,hsl(142_71%_45%/0.08)_0%,transparent_70%)]" />
         <AnimateOnScroll>

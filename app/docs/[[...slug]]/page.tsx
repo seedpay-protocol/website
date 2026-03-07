@@ -6,6 +6,7 @@ import type { Metadata } from 'next';
 import { createRelativeLink } from 'fumadocs-ui/mdx';
 import { LLMCopyButton, ViewOptions } from '@/components/ai/page-actions';
 import { gitConfig } from '@/lib/layout.shared';
+import { ArticleJsonLd, BreadcrumbJsonLd } from '@/components/json-ld';
 
 export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
   const params = await props.params;
@@ -14,8 +15,19 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
 
   const MDX = page.data.body;
 
+  const breadcrumbItems = [
+    { name: "Home", url: "/" },
+    { name: "Docs", url: "/docs" },
+    ...page.slugs.map((slug, i) => ({
+      name: i === page.slugs.length - 1 ? page.data.title : slug.replace(/-/g, " "),
+      url: `/docs/${page.slugs.slice(0, i + 1).join("/")}`,
+    })),
+  ];
+
   return (
     <DocsPage toc={page.data.toc} full={page.data.full}>
+      <ArticleJsonLd title={page.data.title} description={page.data.description ?? ""} url={page.url} />
+      <BreadcrumbJsonLd items={breadcrumbItems} />
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription className="mb-0">{page.data.description}</DocsDescription>
       <div className="flex flex-row gap-2 items-center border-b pb-6">
@@ -50,7 +62,13 @@ export async function generateMetadata(props: PageProps<'/docs/[[...slug]]'>): P
     title: page.data.title,
     description: page.data.description,
     openGraph: {
+      title: page.data.title,
+      description: page.data.description,
+      type: "article",
       images: getPageImage(page).url,
+    },
+    alternates: {
+      canonical: page.url,
     },
   };
 }
