@@ -16,10 +16,8 @@ import {
   SESSION_HASH,
   CHANNEL_ID,
   TX_SIGNATURE,
-  PRICE_PER_MB,
-  DEFAULT_DEPOSIT,
   CHANNEL_TIMEOUT,
-  CHECK_INTERVAL_MB,
+  DEFAULT_CONFIG,
 } from "./playground-data";
 
 let msgCounter = 0;
@@ -37,36 +35,40 @@ function createMessage(
   };
 }
 
-const initialState: PlaygroundState = {
-  phase: "idle",
-  subStep: "idle",
-  messages: [],
-  crypto: {
-    leecherEphemeralPk: null,
-    seederEphemeralPk: null,
-    sharedSecret: null,
-    sessionUuid: null,
-    sessionHash: null,
-  },
-  channel: {
-    channelId: null,
-    deposit: DEFAULT_DEPOSIT,
-    seederWallet: SEEDER_WALLET,
-    leecherWallet: LEECHER_WALLET,
-    pricePerMb: PRICE_PER_MB,
-    timeout: CHANNEL_TIMEOUT,
-    status: "none",
-  },
-  transfer: {
-    mbDownloaded: 0,
-    totalCost: 0,
-    lastCheckAmount: 0,
-    lastCheckNonce: 0,
-    piecesTransferred: 0,
-    isChoked: false,
-    mbSinceLastCheck: 0,
-  },
-};
+function makeInitialState(): PlaygroundState {
+  return {
+    phase: "idle",
+    subStep: "idle",
+    messages: [],
+    crypto: {
+      leecherEphemeralPk: null,
+      seederEphemeralPk: null,
+      sharedSecret: null,
+      sessionUuid: null,
+      sessionHash: null,
+    },
+    channel: {
+      channelId: null,
+      deposit: DEFAULT_CONFIG.deposit,
+      seederWallet: SEEDER_WALLET,
+      leecherWallet: LEECHER_WALLET,
+      pricePerMb: DEFAULT_CONFIG.pricePerMb,
+      timeout: CHANNEL_TIMEOUT,
+      status: "none",
+    },
+    transfer: {
+      mbDownloaded: 0,
+      totalCost: 0,
+      lastCheckAmount: 0,
+      lastCheckNonce: 0,
+      piecesTransferred: 0,
+      isChoked: false,
+      mbSinceLastCheck: 0,
+    },
+    config: { ...DEFAULT_CONFIG },
+    scenarioId: null,
+  };
+}
 
 // Sub-step progression order for NEXT_STEP
 const stepOrder: SubStep[] = [
@@ -110,7 +112,49 @@ function reducer(state: PlaygroundState, action: PlaygroundAction): PlaygroundSt
   switch (action.type) {
     case "RESET": {
       msgCounter = 0;
-      return { ...initialState, messages: [] };
+      return makeInitialState();
+    }
+
+    case "SELECT_SCENARIO": {
+      msgCounter = 0;
+      const config = action.config;
+      return {
+        ...makeInitialState(),
+        config,
+        scenarioId: action.scenarioId,
+        channel: {
+          ...makeInitialState().channel,
+          deposit: config.deposit,
+          pricePerMb: config.pricePerMb,
+        },
+      };
+    }
+
+    case "UPDATE_CONFIG": {
+      const newConfig = { ...state.config, ...action.config };
+      return {
+        ...state,
+        config: newConfig,
+        channel: {
+          ...state.channel,
+          deposit: newConfig.deposit,
+          pricePerMb: newConfig.pricePerMb,
+        },
+      };
+    }
+
+    case "TOGGLE_AUTO_PLAY": {
+      return {
+        ...state,
+        config: { ...state.config, autoPlay: !state.config.autoPlay },
+      };
+    }
+
+    case "SET_AUTO_PLAY_SPEED": {
+      return {
+        ...state,
+        config: { ...state.config, autoPlaySpeed: action.speed },
+      };
     }
 
     case "SET_DEPOSIT": {
@@ -118,6 +162,7 @@ function reducer(state: PlaygroundState, action: PlaygroundAction): PlaygroundSt
       return {
         ...state,
         channel: { ...state.channel, deposit: action.amount },
+        config: { ...state.config, deposit: action.amount },
       };
     }
 
@@ -140,6 +185,7 @@ function reducer(state: PlaygroundState, action: PlaygroundAction): PlaygroundSt
       const newMessages = [...state.messages];
       let crypto = { ...state.crypto };
       let channel = { ...state.channel };
+      const pricePerMb = state.config.pricePerMb;
 
       // Generate messages for the new step
       switch (nextStep) {
@@ -159,7 +205,7 @@ function reducer(state: PlaygroundState, action: PlaygroundAction): PlaygroundSt
             createMessage("seeder-to-leecher", "Extended Handshake (Seeder)", {
               m: { seedpay: 1, ut_metadata: 2 },
               seedpay_wallet: SEEDER_WALLET,
-              seedpay_price_per_mb: PRICE_PER_MB,
+              seedpay_price_per_mb: pricePerMb,
               seedpay_chain: "solana",
               seedpay_min_prepayment: 0.01,
             }),
@@ -179,7 +225,7 @@ function reducer(state: PlaygroundState, action: PlaygroundAction): PlaygroundSt
           newMessages.push(
             createMessage("system", "SeedPay Negotiated", {
               status: "Both peers support SeedPay",
-              price_per_mb: PRICE_PER_MB,
+              price_per_mb: pricePerMb,
               chain: "solana",
               currency: "USDC",
             }),
@@ -336,7 +382,7 @@ function reducer(state: PlaygroundState, action: PlaygroundAction): PlaygroundSt
               confirmed: true,
               channel_id: CHANNEL_ID,
               deposit: channel.deposit,
-              price_per_mb: PRICE_PER_MB,
+              price_per_mb: pricePerMb,
               timeout: CHANNEL_TIMEOUT,
             }),
           );
@@ -367,12 +413,39 @@ function reducer(state: PlaygroundState, action: PlaygroundAction): PlaygroundSt
       if (state.phase !== "data-transfer") return state;
       if (state.transfer.isChoked) return state;
 
-      const tickMb = 5;
-      const tickCost = tickMb * PRICE_PER_MB;
+      const tickMb = state.config.transferSpeedMb;
+      const tickCost = tickMb * state.config.pricePerMb;
       const newMb = state.transfer.mbDownloaded + tickMb;
       const newCost = state.transfer.totalCost + tickCost;
       const newMbSinceCheck = state.transfer.mbSinceLastCheck + tickMb;
       const newPieces = state.transfer.piecesTransferred + 1;
+
+      // Check if deposit is exhausted
+      if (newCost >= state.channel.deposit) {
+        const newMessages = [
+          ...state.messages,
+          createMessage("system", "Deposit Exhausted", {
+            total_cost: Number(newCost.toFixed(4)),
+            deposit: state.channel.deposit,
+            status: "Insufficient funds — auto-closing channel",
+          }),
+        ];
+        return {
+          ...state,
+          phase: "closing",
+          subStep: "cl:tx-submitted",
+          messages: newMessages,
+          transfer: {
+            ...state.transfer,
+            mbDownloaded: newMb,
+            totalCost: Math.min(newCost, state.channel.deposit),
+            piecesTransferred: newPieces,
+            isChoked: true,
+            mbSinceLastCheck: newMbSinceCheck,
+          },
+          config: { ...state.config, autoPlay: false },
+        };
+      }
 
       const transfer = {
         ...state.transfer,
@@ -382,8 +455,10 @@ function reducer(state: PlaygroundState, action: PlaygroundAction): PlaygroundSt
         mbSinceLastCheck: newMbSinceCheck,
       };
 
-      // After CHECK_INTERVAL_MB without a check, seeder demands one
-      if (newMbSinceCheck >= CHECK_INTERVAL_MB && state.subStep === "dt:transferring") {
+      const checkInterval = state.config.checkIntervalMb;
+
+      // After checkInterval without a check, seeder demands one
+      if (newMbSinceCheck >= checkInterval && state.subStep === "dt:transferring") {
         const newMessages = [
           ...state.messages,
           createMessage("seeder-to-leecher", "payment_check_required", {
@@ -391,7 +466,7 @@ function reducer(state: PlaygroundState, action: PlaygroundAction): PlaygroundSt
             required_amount: newCost,
             current_check_amount: state.transfer.lastCheckAmount,
             estimated_remaining_mb: Math.floor(
-              (state.channel.deposit - newCost) / PRICE_PER_MB,
+              (state.channel.deposit - newCost) / state.config.pricePerMb,
             ),
           }),
         ];
@@ -403,9 +478,9 @@ function reducer(state: PlaygroundState, action: PlaygroundAction): PlaygroundSt
         };
       }
 
-      // After another CHECK_INTERVAL_MB without paying, choke
+      // After another checkInterval without paying, choke
       if (
-        newMbSinceCheck >= CHECK_INTERVAL_MB * 2 &&
+        newMbSinceCheck >= checkInterval * 2 &&
         state.subStep === "dt:check-required"
       ) {
         return {
@@ -467,6 +542,7 @@ function reducer(state: PlaygroundState, action: PlaygroundAction): PlaygroundSt
         subStep: "cl:tx-submitted",
         messages: newMessages,
         transfer: { ...state.transfer, isChoked: true },
+        config: { ...state.config, autoPlay: false },
       };
     }
 
@@ -482,7 +558,7 @@ export function closeReducer(
 ): PlaygroundState {
   if (action.type === "RESET") {
     msgCounter = 0;
-    return { ...initialState, messages: [] };
+    return makeInitialState();
   }
 
   if (action.type !== "NEXT_STEP") return reducer(state, action);
@@ -540,5 +616,5 @@ function combinedReducer(
 }
 
 export function usePlaygroundState() {
-  return useReducer(combinedReducer, { ...initialState, messages: [] });
+  return useReducer(combinedReducer, undefined, makeInitialState);
 }

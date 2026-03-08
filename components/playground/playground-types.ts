@@ -76,6 +76,22 @@ export interface TransferState {
   mbSinceLastCheck: number;
 }
 
+export type ScenarioId =
+  | "happy-path"
+  | "low-deposit"
+  | "expensive-seeder"
+  | "fast-transfer"
+  | "custom";
+
+export interface PlaygroundConfig {
+  deposit: number;
+  pricePerMb: number;
+  checkIntervalMb: number;
+  transferSpeedMb: number;
+  autoPlay: boolean;
+  autoPlaySpeed: number;
+}
+
 export interface PlaygroundState {
   phase: Phase;
   subStep: SubStep;
@@ -83,6 +99,8 @@ export interface PlaygroundState {
   crypto: CryptoState;
   channel: ChannelState;
   transfer: TransferState;
+  config: PlaygroundConfig;
+  scenarioId: ScenarioId | null;
 }
 
 export type PlaygroundAction =
@@ -91,4 +109,8 @@ export type PlaygroundAction =
   | { type: "SET_DEPOSIT"; amount: number }
   | { type: "SEND_PAYMENT_CHECK" }
   | { type: "TRANSFER_TICK" }
-  | { type: "CLOSE_CHANNEL" };
+  | { type: "CLOSE_CHANNEL" }
+  | { type: "SELECT_SCENARIO"; scenarioId: ScenarioId; config: PlaygroundConfig }
+  | { type: "UPDATE_CONFIG"; config: Partial<PlaygroundConfig> }
+  | { type: "TOGGLE_AUTO_PLAY" }
+  | { type: "SET_AUTO_PLAY_SPEED"; speed: number };

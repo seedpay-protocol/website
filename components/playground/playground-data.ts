@@ -1,3 +1,5 @@
+import type { PlaygroundConfig, ScenarioId } from "./playground-types";
+
 export const LEECHER_WALLET = "8a3F…d21b";
 export const SEEDER_WALLET = "4b7C…c09e";
 export const LEECHER_EPHEMERAL_PK =
@@ -19,6 +21,61 @@ export const PRICE_PER_MB = 0.0001;
 export const MIN_PREPAYMENT = 0.01;
 export const CHANNEL_TIMEOUT = 3600;
 export const CHECK_INTERVAL_MB = 50;
+
+export const DEFAULT_CONFIG: PlaygroundConfig = {
+  deposit: DEFAULT_DEPOSIT,
+  pricePerMb: PRICE_PER_MB,
+  checkIntervalMb: CHECK_INTERVAL_MB,
+  transferSpeedMb: 5,
+  autoPlay: false,
+  autoPlaySpeed: 1,
+};
+
+export interface ScenarioDefinition {
+  id: ScenarioId;
+  name: string;
+  description: string;
+  config: Partial<PlaygroundConfig>;
+  color: string;
+}
+
+export const scenarios: ScenarioDefinition[] = [
+  {
+    id: "happy-path",
+    name: "Happy Path",
+    description: "Normal flow with generous deposit. Leecher pays on time, channel closes cooperatively.",
+    config: { deposit: 5.0, pricePerMb: 0.0001, checkIntervalMb: 50, transferSpeedMb: 5 },
+    color: "emerald",
+  },
+  {
+    id: "low-deposit",
+    name: "Low Deposit",
+    description: "Tiny deposit that runs out fast. See what happens when funds are exhausted mid-transfer.",
+    config: { deposit: 0.02, pricePerMb: 0.0001, checkIntervalMb: 30, transferSpeedMb: 10 },
+    color: "amber",
+  },
+  {
+    id: "expensive-seeder",
+    name: "Premium Seeder",
+    description: "Seeder charging 10x normal rate. Payment checks cycle much more frequently.",
+    config: { deposit: 10.0, pricePerMb: 0.001, checkIntervalMb: 20, transferSpeedMb: 5 },
+    color: "purple",
+  },
+  {
+    id: "fast-transfer",
+    name: "Fast Transfer",
+    description: "High-speed data transfer with rapid payment cycling. Great for seeing the check flow.",
+    config: { deposit: 5.0, pricePerMb: 0.0001, checkIntervalMb: 25, transferSpeedMb: 15 },
+    color: "sky",
+  },
+  {
+    id: "custom",
+    name: "Custom",
+    description: "Configure your own parameters and see how the protocol behaves.",
+    config: {},
+    color: "neutral",
+  },
+];
 
 export const phaseConfig = [
   { key: "handshake" as const, label: "Handshake", number: 1 },

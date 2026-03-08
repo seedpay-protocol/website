@@ -10,19 +10,25 @@ import type {
   ChannelState,
 } from "./playground-types";
 import { ExplanationCard } from "./explanation-card";
-import { explanations, CHECK_INTERVAL_MB, PRICE_PER_MB } from "./playground-data";
+import { explanations } from "./playground-data";
 
 export function PhaseDataTransfer({
   subStep,
   transfer,
   channel,
   dispatch,
+  checkIntervalMb,
+  pricePerMb,
 }: {
   subStep: SubStep;
   transfer: TransferState;
   channel: ChannelState;
   dispatch: React.Dispatch<PlaygroundAction>;
+  checkIntervalMb?: number;
+  pricePerMb?: number;
 }) {
+  const CHECK_INTERVAL_MB = checkIntervalMb ?? 50;
+  const PRICE_PER_MB = pricePerMb ?? 0.0001;
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const explanation = explanations[subStep] ?? explanations["dt:transferring"];
 
