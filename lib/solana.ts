@@ -316,6 +316,64 @@ export async function derivePDA(
   throw new Error("Could not derive PDA");
 }
 
+export interface ProtocolStats {
+  totalChannels: number;
+  openChannels: number;
+  closedChannels: number;
+  timedOutChannels: number;
+  totalDeposited: bigint;
+  uniqueLeechers: number;
+  uniqueSeeders: number;
+}
+
+export async function fetchProtocolStats(
+  rpc: Rpc<SolanaRpcApi>
+): Promise<ProtocolStats> {
+  const programId = address("7DwPMoGzTjRUroE47VPEEJn4FBSypAA5dbeMn3ocVdsS");
+
+  const result = await rpc
+    .getProgramAccounts(programId, { encoding: "base64" })
+    .send();
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const accounts = (result as any).value ?? result;
+
+  const leechers = new Set<string>();
+  const seeders = new Set<string>();
+  let open = 0;
+  let closed = 0;
+  let timedOut = 0;
+  let totalDeposited = 0n;
+
+  for (const account of accounts) {
+    const data = account.account.data;
+    const bytes: Uint8Array =
+      data instanceof Uint8Array
+        ? data
+        : Uint8Array.from(
+            atob(Array.isArray(data) ? data[0] : data),
+            (c) => c.charCodeAt(0)
+          );
+    const channel = deserializeChannelState(bytes);
+    leechers.add(channel.leecher);
+    seeders.add(channel.seeder);
+    totalDeposited += channel.deposited;
+    if (channel.status === ChannelStatus.Open) open++;
+    else if (channel.status === ChannelStatus.Closed) closed++;
+    else timedOut++;
+  }
+
+  return {
+    totalChannels: accounts.length,
+    openChannels: open,
+    closedChannels: closed,
+    timedOutChannels: timedOut,
+    totalDeposited,
+    uniqueLeechers: leechers.size,
+    uniqueSeeders: seeders.size,
+  };
+}
+
 export function formatTokenAmount(amount: bigint, decimals = 6): string {
   const divisor = BigInt(10 ** decimals);
   const whole = amount / divisor;

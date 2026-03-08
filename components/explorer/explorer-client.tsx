@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { address, type Address } from "@solana/kit";
 import {
   Search,
@@ -16,18 +16,22 @@ import {
   ArrowDownToLine,
   Key,
   User,
+  BarChart3,
+  Users,
 } from "lucide-react";
 import {
   type Cluster,
   type ChannelState,
   type TransactionSignature,
   type WalletChannel,
+  type ProtocolStats,
   ChannelStatus,
   CHANNEL_STATUS_LABELS,
   getRpc,
   fetchChannelState,
   fetchTransactionHistory,
   fetchWalletChannels,
+  fetchProtocolStats,
   derivePDA,
   formatTokenAmount,
   shortenAddress,
@@ -557,14 +561,88 @@ function PDADerivationTab({ cluster }: { cluster: Cluster }) {
   );
 }
 
+// --- Tab: Protocol Stats ---
+
+function StatsTab({ cluster }: { cluster: Cluster }) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [stats, setStats] = useState<ProtocolStats | null>(null);
+
+  const loadStats = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const rpc = getRpc(cluster);
+      const data = await fetchProtocolStats(rpc);
+      setStats(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch protocol stats.");
+    } finally {
+      setLoading(false);
+    }
+  }, [cluster]);
+
+  useEffect(() => { loadStats(); }, [loadStats]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <Loader2 className="size-6 animate-spin text-fd-primary" />
+        <span className="ml-3 text-sm text-fd-muted-foreground">Loading protocol stats...</span>
+      </div>
+    );
+  }
+
+  if (error) return <ErrorBanner message={error} />;
+  if (!stats) return null;
+
+  const statCards = [
+    { label: "Total Channels", value: stats.totalChannels.toString(), icon: Hash },
+    { label: "Open", value: stats.openChannels.toString(), icon: Clock, color: "text-green-500" },
+    { label: "Closed", value: stats.closedChannels.toString(), icon: Check },
+    { label: "Timed Out", value: stats.timedOutChannels.toString(), icon: AlertCircle, color: "text-amber-500" },
+    { label: "Total Deposited", value: `${formatTokenAmount(stats.totalDeposited)} USDC`, icon: Wallet, color: "text-fd-primary" },
+    { label: "Unique Leechers", value: stats.uniqueLeechers.toString(), icon: User },
+    { label: "Unique Seeders", value: stats.uniqueSeeders.toString(), icon: Users },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {statCards.map((card) => (
+          <div key={card.label} className="rounded-xl border border-fd-border/60 bg-fd-card p-5">
+            <div className="flex items-center gap-2 text-xs text-fd-muted-foreground/60 mb-2">
+              <card.icon className="size-3.5" />
+              {card.label}
+            </div>
+            <div className={`text-2xl font-bold ${card.color ?? ""}`}>{card.value}</div>
+          </div>
+        ))}
+      </div>
+
+      {stats.totalChannels === 0 && (
+        <div className="rounded-xl border border-fd-border/60 bg-fd-card p-6 text-center text-sm text-fd-muted-foreground">
+          No active channels on {cluster}. Closed channels are deallocated and not counted here.
+        </div>
+      )}
+
+      <div className="text-[10px] text-fd-muted-foreground/40 text-center">
+        Stats reflect currently active (non-deallocated) accounts on the SeedPay program.
+        Closed channels that reclaimed rent are not included.
+      </div>
+    </div>
+  );
+}
+
 // --- Main Explorer ---
 
-type Tab = "channel" | "wallet" | "pda";
+type Tab = "channel" | "wallet" | "pda" | "stats";
 
 const tabs: { id: Tab; label: string; icon: typeof Search }[] = [
   { id: "channel", label: "Channel", icon: Search },
   { id: "wallet", label: "Wallet", icon: Wallet },
   { id: "pda", label: "PDA Tool", icon: Key },
+  { id: "stats", label: "Stats", icon: BarChart3 },
 ];
 
 export function ExplorerClient() {
@@ -604,6 +682,7 @@ export function ExplorerClient() {
         {activeTab === "channel" && <ChannelLookupTab cluster={cluster} />}
         {activeTab === "wallet" && <WalletLookupTab cluster={cluster} />}
         {activeTab === "pda" && <PDADerivationTab cluster={cluster} />}
+        {activeTab === "stats" && <StatsTab cluster={cluster} />}
       </section>
     </div>
   );
