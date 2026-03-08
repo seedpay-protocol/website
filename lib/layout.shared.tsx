@@ -29,6 +29,10 @@ export function baseOptions(): BaseLayoutProps {
         url: "/explorer",
       },
       {
+        text: "Calculator",
+        url: "/calculator",
+      },
+      {
         text: "Playground",
         url: "/playground",
       },
