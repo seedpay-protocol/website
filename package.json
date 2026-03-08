@@ -11,6 +11,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@solana/kit": "^6.1.0",
     "fumadocs-core": "16.6.4",
     "fumadocs-mdx": "14.2.7",
     "fumadocs-ui": "16.6.4",
